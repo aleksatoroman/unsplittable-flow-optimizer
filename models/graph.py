@@ -1,21 +1,28 @@
 import networkx as nx
+from typing import List
+
+from models.demand import Demand
+
 
 class FlowGraph:
     def __init__(self):
-        self.graph = nx.DiGraph()
+        self.graph: nx.DiGraph = nx.DiGraph()
+        self.demands: List[Demand] = []  # List of Demand instances
 
-    def add_edge(self, u, v, capacity):
-        """Add a directed edge with capacity to the graph."""
+    def add_edge(self, u: int, v: int, capacity: int) -> None:
         self.graph.add_edge(u, v, capacity=capacity)
 
-    def get_capacity(self, u, v):
-        """Get the capacity of the edge between nodes u and v."""
+    def add_demand(self, demand: Demand) -> None:
+        self.demands.append(demand)
+
+    def get_demands(self) -> List[Demand]:
+        return self.demands
+
+    def get_capacity(self, u: int, v: int) -> int:
         return self.graph[u][v]['capacity']
 
-    def update_capacity(self, u, v, flow):
-        """Update the capacity of an edge after flow is routed through it."""
+    def update_capacity(self, u: int, v: int, flow: int) -> None:
         self.graph[u][v]['capacity'] -= flow
 
-    def get_graph(self):
-        """Return the underlying networkx graph object."""
+    def get_graph(self) -> nx.DiGraph:
         return self.graph
