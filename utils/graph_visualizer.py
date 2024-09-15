@@ -24,14 +24,16 @@ def visualize_flow_graph(graph: FlowGraph, layout: str = 'spring', seed: int = 4
     nx.draw_networkx_nodes(G, pos, nodelist=other_nodes, node_color='gray', node_size=600, label='Other Nodes')
 
     edge_labels = {(u, v): f"{G[u][v]['capacity']}" for u, v in G.edges()}
-    nx.draw_networkx_edges(G, pos, edge_color='blue', arrows=True)
+    nx.draw_networkx_edges(G, pos, edge_color='blue', arrows=True, arrowsize=20, width=1)
+
     nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color='blue')
 
     node_labels = {node: str(node) for node in G.nodes()}
-    for demand in graph.get_demands():
-        node_labels[demand.sink] = f"{demand.sink} ({demand.flow})"
-
     nx.draw_networkx_labels(G, pos, labels=node_labels, font_size=10)
+
+    for demand in graph.get_demands():
+        x, y = pos[demand.sink]
+        plt.text(x, y - 0.2, f"Demand: {demand.flow}", fontsize=10, ha='center', color='black', zorder=5)
 
     plt.title('Flow Graph Visualization')
     plt.axis('off')
