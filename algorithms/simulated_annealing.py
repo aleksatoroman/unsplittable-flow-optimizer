@@ -61,21 +61,28 @@ class SimulatedAnnealing(BaseFlowAlgorithm):
         demand = random.choice(demands)
         current_path = current_solution.paths[demand.sink]
 
-        random_node_index = random.randint(0, len(current_path) - 2)
-        start_node = current_path[random_node_index]
+        max_attempts = 10
+        attempt = 0
 
-        random_node_index2 = random.randint(random_node_index + 1, len(current_path) - 1)
-        end_node = current_path[random_node_index2]
+        while attempt < max_attempts:
+            random_node_index = random.randint(0, len(current_path) - 2)
+            start_node = current_path[random_node_index]
 
-        alternative_path = self.find_random_path(graph, start_node, end_node)
+            random_node_index2 = random.randint(random_node_index + 1, len(current_path) - 1)
+            end_node = current_path[random_node_index2]
 
-        if alternative_path:
-            modified_path = current_path[:random_node_index] + alternative_path + current_path[random_node_index2 + 1:]
+            alternative_path = self.find_random_path(graph, start_node, end_node)
 
-            new_paths = current_solution.paths.copy()
-            new_paths[demand.sink] = modified_path
+            if alternative_path:
+                modified_path = current_path[:random_node_index] + alternative_path + current_path[
+                                                                                      random_node_index2 + 1:]
+                if modified_path != current_path:
+                    new_paths = current_solution.paths.copy()
+                    new_paths[demand.sink] = modified_path
 
-            return FlowResult(new_paths, current_solution.demands, graph.get_edges_with_capacities())
+                    return FlowResult(new_paths, current_solution.demands, graph.get_edges_with_capacities())
+
+            attempt += 1
 
         return current_solution
 

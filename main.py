@@ -4,7 +4,7 @@ from utils.graph_parser import parse_graph_with_demands
 from utils.graph_visualizer import visualize_flow_graph
 
 def main() -> None:
-    file_path: str = "./resources/4.txt"
+    file_path: str = "./resources/2.txt"
 
     graph = parse_graph_with_demands(file_path)
 
