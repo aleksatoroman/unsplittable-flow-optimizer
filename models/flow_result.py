@@ -1,6 +1,7 @@
 from typing import Dict, List
 from models.demand import Demand
 from models.graph import FlowGraph
+from models.log_level import LogLevel
 
 
 class FlowResult:
@@ -70,3 +71,27 @@ class FlowResult:
 
         print(f"Maximum Flow-to-Capacity Ratio: {max_flow_to_capacity_ratio}")
         return valid, max_flow_to_capacity_ratio
+
+    def info(self, level: LogLevel) -> None:
+        for demand_key, path in self.paths.items():
+            demand = self.demands[demand_key]
+            print(f"Path for Demand {demand_key} (Sink: {demand.sink}, Demand: {demand.flow}): {path}")
+
+        is_valid = self.is_feasible()
+
+        if is_valid:
+            print("All constraints satisfied.")
+        else:
+            print("There are constraint violations.")
+
+        max_flow_to_capacity_ratio = self.calculate_max_flow_to_capacity_ratio()
+        print(f"Maximum Flow-to-Capacity Ratio: {max_flow_to_capacity_ratio:.2f}")
+
+        if level == LogLevel.DEBUG:
+            edge_flows = self.calculate_edge_flows()
+            for edge, flow in edge_flows.items():
+                capacity = self.edges[edge]
+                if flow <= capacity:
+                    print(f"Edge {edge} carries {flow} flow (max capacity: {capacity}) - OK")
+                else:
+                    print(f"Edge {edge} carries {flow} flow (max capacity: {capacity}) - VIOLATION")

@@ -17,17 +17,23 @@ class BruteForce(BaseFlowAlgorithm):
         best_combination = None
         min_max_ratio = float('inf')
 
+        count = 0
+        count_feasible = 0
         for path_combination in product(*all_paths):
+            count += 1
             paths = {d.sink: p for d, p in zip(demands, path_combination)}
             result = FlowResult(paths=paths, demands={d.sink: d for d in demands}, edges=graph.get_edges_with_capacities())
 
             if result.is_feasible():
+                count_feasible += 1
                 max_ratio = result.calculate_max_flow_to_capacity_ratio()
 
                 if max_ratio < min_max_ratio:
                     min_max_ratio = max_ratio
                     best_combination = result
 
+        print('Total combinations:', count)
+        print('Feasible combinations:', count_feasible)
         if best_combination:
             return best_combination
         return None
