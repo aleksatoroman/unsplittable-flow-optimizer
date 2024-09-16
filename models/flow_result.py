@@ -1,5 +1,6 @@
 from typing import Dict, List
 from models.demand import Demand
+from models.graph import FlowGraph
 
 
 class FlowResult:
