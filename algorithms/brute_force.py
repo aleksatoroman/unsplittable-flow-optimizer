@@ -14,6 +14,8 @@ class BruteForce(BaseFlowAlgorithm):
             paths = list(nx.all_simple_paths(graph.get_graph(), source=demand.source, target=demand.sink))
             all_paths.append(paths)
 
+        print('Number of paths for each demand:', [len(paths) for paths in all_paths])
+
         best_combination = None
         min_max_ratio = float('inf')
 

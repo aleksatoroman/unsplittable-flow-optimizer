@@ -1,6 +1,7 @@
 import argparse
 import os
 from algorithms.brute_force import BruteForce
+from algorithms.genetic_algorithm import GeneticAlgorithm
 from models.runner import Runner
 from utils.graph_parser import parse_graph_with_demands
 from utils.graph_visualizer import visualize_flow_graph
@@ -17,15 +18,15 @@ def run_algorithms(file_path: str) -> None:
     num_iterations = 1000
 
     algorithms = [
-        BruteForce(),
+        # BruteForce(),
         # SimulatedAnnealing(initial_temp=initial_temp,
         #                    cooling_rate=cooling_rate,
         #                    num_iterations=num_iterations),
-        # GeneticAlgorithm(population_size=100,
-        #                  num_generations=100,
-        #                  tournament_size=7,
-        #                  elitism_size=10,
-        #                  mutation_prob=0.05)
+        GeneticAlgorithm(population_size=200,
+                         num_generations=350,
+                         tournament_size=7,
+                         elitism_size=20,
+                         mutation_prob=0.1)
     ]
 
     for algorithm in algorithms:

@@ -16,12 +16,9 @@ class Individual:
 
         edge_flows = self.code.calculate_edge_flows()
         capacities = self.graph.get_edges_with_capacities()
-        penalty_threshold = 10
-        weight = 0.5
 
         for edge, flow in edge_flows.items():
             capacity = capacities[edge]
-
             if flow > capacity:
                 overflow = flow - capacity
                 total_penalty += overflow
@@ -29,12 +26,9 @@ class Individual:
 
         if feasible:
             max_flow_to_capacity_ratio = self.code.calculate_max_flow_to_capacity_ratio()
-            return 1 / (1 + max_flow_to_capacity_ratio)
-        elif total_penalty <= penalty_threshold:
-            max_flow_to_capacity_ratio = self.code.calculate_max_flow_to_capacity_ratio()
-            return (1 / (1 + total_penalty)) + weight * (1 / (1 + max_flow_to_capacity_ratio))
+            return 1 - max_flow_to_capacity_ratio
         else:
-            return 1 / (1 + total_penalty)
+            return -(1 + total_penalty)
 
     def mutate(self, mutation_prob: float) -> None:
         for demand_key in self.code.paths.keys():
