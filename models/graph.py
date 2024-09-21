@@ -29,3 +29,4 @@ class FlowGraph:
 
     def get_edges_with_capacities(self) -> Dict[Tuple[int, int], int]:
         return {(u, v): data['capacity'] for u, v, data in self.graph.edges(data=True)}
+

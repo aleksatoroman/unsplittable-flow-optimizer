@@ -3,7 +3,6 @@ import networkx as nx
 import random
 import hashlib
 
-
 class GraphGenerator:
     def __init__(self, num_nodes, edge_prob, source_node, num_demands, demand_type='balanced'):
         self.num_nodes = num_nodes
@@ -12,11 +11,14 @@ class GraphGenerator:
         self.num_demands = num_demands
         self.demand_type = demand_type
 
+        self.edge_lower_bound = 10
+        self.edge_upper_bound = 40
+
     def generate_graph(self):
         G = nx.gnp_random_graph(self.num_nodes, self.edge_prob, directed=True)
 
         for u, v in G.edges():
-            G.edges[u, v]['capacity'] = random.randint(5, 50)
+            G.edges[u, v]['capacity'] = random.randint(self.edge_lower_bound, self.edge_upper_bound)
 
         return G
 
@@ -48,26 +50,49 @@ class GraphGenerator:
 
         for u, v in zip(path[:-1], path[1:]):
             if not G.has_edge(u, v):
-                capacity = random.randint(5, 50)
+                capacity = random.randint(self.edge_lower_bound, self.edge_upper_bound)
                 G.add_edge(u, v, capacity=capacity)
                 print(f"Added edge from {u} to {v} with capacity {capacity}.")
 
-    def generate_demands(self, G):
+    def generate_demands(self, G) -> dict[int, list[int]]:
         nodes = list(G.nodes())
         nodes.remove(self.source_node)
         sinks = random.sample(nodes, self.num_demands)
 
         demands = {}
         for sink in sinks:
-            if self.num_nodes >= 30:
-                demand = random.randint(20, 30)
-            elif self.num_nodes >= 15:
-                demand = random.randint(10, 20)
-            else:
-                demand = random.randint(5, 10)
-            demands[sink] = demand
+            num_vertex_demands = self.determine_number_of_demands()
+
+            sink_demands = []
+            for _ in range(num_vertex_demands):
+                min_capacity = self.edge_lower_bound
+                demand_value = random.randint(1, min_capacity)
+                sink_demands.append(demand_value)
+
+            demands[sink] = sink_demands
 
         return demands
+
+
+    def alter_source_edges(self, G):
+        incoming_edges = list(G.in_edges(self.source_node))
+
+        for u, v in incoming_edges:
+            if random.random() < 0.5:
+                G.remove_edge(u, v)
+                G.add_edge(v, u, capacity=G[v][u]['capacity'] if (v, u) in G.edges else random.randint(1, 50))
+                print(f"Reversed edge from {u} -> {v} to {v} -> {u}")
+            else:
+                G.remove_edge(u, v)
+                print(f"Removed edge from {u} -> {v}")
+
+    def determine_number_of_demands(self) -> int:
+        if self.demand_type == 'balanced':
+            return random.randint(1, 2)
+        elif self.demand_type == 'large':
+            return random.randint(1, 3)
+        else:
+            return 1
 
     def serialize_graph(self, G, demands):
         serialized_graph = []
@@ -80,14 +105,15 @@ class GraphGenerator:
             serialized_graph.append(f"{u} {v} {capacity}")
 
         serialized_graph.append(f"{len(demands)}")
-        for sink, demand in demands.items():
-            serialized_graph.append(f"{sink} {demand}")
+        for sink, sink_demands in demands.items():
+            serialized_graph.append(f"{sink} {len(sink_demands)} {' '.join(map(str, sink_demands))}")
 
         return serialized_graph
 
     def calculate_hash(self, serialized_graph):
         serialized_str = ''.join(serialized_graph).encode('utf-8')
         return hashlib.md5(serialized_str).hexdigest()[:8]
+
 
 
 class GraphGeneratorManager:
@@ -106,11 +132,10 @@ class GraphGeneratorManager:
         demands = graph_generator.generate_demands(G)
 
         graph_generator.remove_outgoing_edges_from_sinks(G, demands)
-
         graph_generator.ensure_path_to_demands(G, demands)
+        graph_generator.alter_source_edges(G)
 
         serialized_graph = graph_generator.serialize_graph(G, demands)
-
         graph_hash = graph_generator.calculate_hash(serialized_graph)
         filename = f"{graph_type}_{graph_hash}.txt"
 

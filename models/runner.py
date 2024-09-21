@@ -10,7 +10,7 @@ class Runner:
         self.algorithm = algorithm
         self.graph = graph
 
-    def run(self):
+    def run(self, log_level: LogLevel = LogLevel.INFO):
         print(f"Running {self.algorithm.__class__.__name__}...")
 
         start_time = time.time()
@@ -23,7 +23,7 @@ class Runner:
         print(f"Algorithm {self.algorithm.__class__.__name__} finished. Time taken: {elapsed_time:.4f} seconds")
 
         if result:
-            result.info(LogLevel.INFO)
+            result.info(log_level)
         else:
             print(f"No solution found using {self.algorithm.__class__.__name__}")
 

@@ -16,11 +16,16 @@ def parse_graph_with_demands(file_path: str) -> FlowGraph:
         u, v, capacity = map(int, lines[i].strip().split())
         G.add_edge(u, v, capacity)
 
-    num_sinks: int = int(lines[3 + num_edges].strip())
+    num_demand_vertices: int = int(lines[3 + num_edges].strip())
 
-    for i in range(4 + num_edges, 4 + num_edges + num_sinks):
-        sink, flow = map(int, lines[i].strip().split())
-        demand = Demand(source=source, sink=sink, flow=flow)
-        G.add_demand(demand)
+    for i in range(4 + num_edges, 4 + num_edges + num_demand_vertices):
+        demand_info = list(map(int, lines[i].strip().split()))
+        sink = demand_info[0]
+        num_demands = demand_info[1]
+
+        for j in range(num_demands):
+            flow = demand_info[2 + j]
+            demand = Demand(source=source, sink=sink, flow=flow)
+            G.add_demand(demand)
 
     return G

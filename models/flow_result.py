@@ -50,28 +50,6 @@ class FlowResult:
 
         return max_flow_to_capacity_ratio + penalty
 
-    def validate(self):
-        edge_flows = self.calculate_edge_flows()
-
-        valid = True
-        max_flow_to_capacity_ratio = self.calculate_max_flow_to_capacity_ratio()
-
-        for edge, flow in edge_flows.items():
-            capacity = self.edges[edge]
-            if flow <= capacity:
-                print(f"Edge {edge} carries {flow} flow (max capacity: {capacity}) - OK")
-            else:
-                print(f"Edge {edge} carries {flow} flow (max capacity: {capacity}) - VIOLATION")
-                valid = False
-
-        if valid:
-            print("All constraints satisfied.")
-        else:
-            print("There are constraint violations.")
-
-        print(f"Maximum Flow-to-Capacity Ratio: {max_flow_to_capacity_ratio}")
-        return valid, max_flow_to_capacity_ratio
-
     def info(self, level: LogLevel) -> None:
         for demand_key, path in self.paths.items():
             demand = self.demands[demand_key]
