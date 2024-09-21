@@ -2,7 +2,7 @@ import networkx as nx
 from itertools import product
 from algorithms.base_algorithm import BaseFlowAlgorithm
 from models.graph import FlowGraph
-from models.flow_result import FlowResult
+from models.flow_result import FlowResult, FlowPath
 
 
 class BruteForce(BaseFlowAlgorithm):
@@ -21,10 +21,16 @@ class BruteForce(BaseFlowAlgorithm):
 
         count = 0
         count_feasible = 0
+
         for path_combination in product(*all_paths):
             count += 1
-            paths = {d.sink: p for d, p in zip(demands, path_combination)}
-            result = FlowResult(paths=paths, demands={d.sink: d for d in demands}, edges=graph.get_edges_with_capacities())
+
+            flow_paths = [
+                FlowPath(source=demand.source, sink=demand.sink, path=path, flow=demand.flow)
+                for demand, path in zip(demands, path_combination)
+            ]
+
+            result = FlowResult(flow_paths=flow_paths, edges=graph.get_edges_with_capacities())
 
             if result.is_feasible():
                 count_feasible += 1
