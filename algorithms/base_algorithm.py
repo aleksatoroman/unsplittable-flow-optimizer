@@ -5,6 +5,7 @@ from models.flow_result import FlowResult
 
 class BaseFlowAlgorithm(ABC):
     def __init__(self, params: dict):
+        self.artifacts_root = params.get('artifacts_root', None)
         pass
 
     @abstractmethod
@@ -15,3 +16,4 @@ class BaseFlowAlgorithm(ABC):
         :return: Solution object or data structure representing the result.
         """
         pass
+

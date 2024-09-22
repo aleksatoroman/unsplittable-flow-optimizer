@@ -15,9 +15,6 @@ from glob import glob
 def run_algorithms_in_folder(root_folder: str) -> None:
     txt_files = glob(os.path.join(root_folder, "*.txt"))
 
-    report_dir = os.path.join(root_folder, 'reports', time.strftime("%Y-%m-%d_%H-%M-%S"))
-    os.makedirs(report_dir, exist_ok=True)
-
     sa_param_grid = {
         'initial_temp': [1000, 5000],
         'cooling_rate': [0.99, 0.95],
@@ -41,6 +38,7 @@ def run_algorithms_in_folder(root_folder: str) -> None:
         (GeneticAlgorithm, ga_combinations)
     ]
 
+    timestamp = time.strftime("%Y-%m-%d_%H_%M_%S")
     for txt_file in txt_files:
         try:
             graph = parse_graph_with_demands(txt_file)
@@ -49,12 +47,14 @@ def run_algorithms_in_folder(root_folder: str) -> None:
             continue
 
         example_name = os.path.splitext(os.path.basename(txt_file))[0]
-        report_file = os.path.join(report_dir, f"{example_name}_{time.time()}_report.csv")
+
+        report_dir = os.path.join(root_folder, 'reports', timestamp, example_name)
+        os.makedirs(report_dir, exist_ok=True)
 
         for algorithm_class, param_combinations in algorithms:
             for params in param_combinations:
                 print(f"Running {algorithm_class.__name__} on {example_name} with params: {params}")
-                runner = Runner(algorithm_class, graph, params, report_file)
+                runner = Runner(algorithm_class, graph, params, report_dir)
                 runner.run(LogLevel.INFO)
                 print('*' * 50)
 

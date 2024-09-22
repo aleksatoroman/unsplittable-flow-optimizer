@@ -1,3 +1,4 @@
+import os
 import time
 
 from models.flow_result import FlowResult
@@ -7,11 +8,18 @@ from utils.reports import write_report_to_csv
 
 
 class Runner:
-    def __init__(self, algorithm_class, graph: FlowGraph, params: dict, csv_file: str | None):
-        self.algorithm = algorithm_class(params)
-        self.graph = graph
+    def __init__(self, algorithm_class, graph: FlowGraph, params: dict, report_dir: str | None):
         self.params = params
-        self.csv_file = csv_file
+        self.params['artifacts_root'] = report_dir
+
+        self.algorithm = algorithm_class(self.params)
+        self.graph = graph
+
+        if report_dir is not None:
+            os.makedirs(report_dir, exist_ok=True)
+            self.csv_file = os.path.join(report_dir, "report.csv")
+        else:
+            self.csv_file = None
 
     def run(self, log_level: LogLevel = LogLevel.INFO) -> FlowResult | None:
         print(f"Running {self.algorithm.__class__.__name__} with params {self.params}...")
