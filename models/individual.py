@@ -31,7 +31,8 @@ class Individual:
             return -(1 + total_penalty)
 
     def mutate(self, mutation_prob: float) -> None:
-        for demand_key in self.code.paths.keys():
+        for index, flow_path in enumerate(self.code.flow_paths):
+            demand_key = (flow_path.sink, index)
             if random.random() < mutation_prob:
-                mutated_solution = GraphUtils.generate_neighbor(self.code, self.graph, demand_key)
+                mutated_solution = GraphUtils.generate_neighbor(self.code, self.graph, demand_key=demand_key)
                 self.code = mutated_solution

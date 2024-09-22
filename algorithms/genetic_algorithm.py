@@ -1,19 +1,13 @@
 from algorithms.base_algorithm import BaseFlowAlgorithm
 from models.graph import FlowGraph
-from models.flow_result import FlowResult
+from models.flow_result import FlowResult, FlowPath
 import random
-
 from models.individual import Individual
 
 
 class GeneticAlgorithm(BaseFlowAlgorithm):
 
-    def __init__(self,
-                 population_size,
-                 num_generations,
-                 tournament_size,
-                 elitism_size,
-                 mutation_prob):
+    def __init__(self, population_size, num_generations, tournament_size, elitism_size, mutation_prob):
         self.population_size = population_size
         self.num_generations = num_generations
         self.tournament_size = tournament_size
@@ -27,15 +21,33 @@ class GeneticAlgorithm(BaseFlowAlgorithm):
 
     @staticmethod
     def crossover(parent1: Individual, parent2: Individual, child1: Individual, child2: Individual) -> None:
-        demands = list(parent1.code.paths.keys())
-
-        for demand in demands:
+        for i, flow_path in enumerate(parent1.code.flow_paths):
             if random.random() < 0.5:
-                child1.code.paths[demand] = parent1.code.paths[demand]
-                child2.code.paths[demand] = parent2.code.paths[demand]
+                child1.code.flow_paths[i] = FlowPath(
+                    source=parent1.code.flow_paths[i].source,
+                    sink=parent1.code.flow_paths[i].sink,
+                    path=parent1.code.flow_paths[i].path,
+                    flow=parent1.code.flow_paths[i].flow
+                )
+                child2.code.flow_paths[i] = FlowPath(
+                    source=parent2.code.flow_paths[i].source,
+                    sink=parent2.code.flow_paths[i].sink,
+                    path=parent2.code.flow_paths[i].path,
+                    flow=parent2.code.flow_paths[i].flow
+                )
             else:
-                child1.code.paths[demand] = parent2.code.paths[demand]
-                child2.code.paths[demand] = parent1.code.paths[demand]
+                child1.code.flow_paths[i] = FlowPath(
+                    source=parent2.code.flow_paths[i].source,
+                    sink=parent2.code.flow_paths[i].sink,
+                    path=parent2.code.flow_paths[i].path,
+                    flow=parent2.code.flow_paths[i].flow
+                )
+                child2.code.flow_paths[i] = FlowPath(
+                    source=parent1.code.flow_paths[i].source,
+                    sink=parent1.code.flow_paths[i].sink,
+                    path=parent1.code.flow_paths[i].path,
+                    flow=parent1.code.flow_paths[i].flow
+                )
 
     def solve(self, graph) -> FlowResult | None:
         population = [Individual(graph) for _ in range(self.population_size)]
