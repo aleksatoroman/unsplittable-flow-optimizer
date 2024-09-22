@@ -4,6 +4,9 @@ from models.flow_result import FlowResult
 
 
 class BaseFlowAlgorithm(ABC):
+    def __init__(self, params: dict):
+        pass
+
     @abstractmethod
     def solve(self, graph) -> FlowResult | None:
         """

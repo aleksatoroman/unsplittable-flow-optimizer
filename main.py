@@ -1,38 +1,62 @@
 import argparse
 import os
+import time
 from algorithms.brute_force import BruteForce
 from algorithms.genetic_algorithm import GeneticAlgorithm
+from algorithms.simulated_annealing import SimulatedAnnealing
+from models.log_level import LogLevel
 from models.runner import Runner
 from utils.graph_parser import parse_graph_with_demands
-from utils.graph_visualizer import visualize_flow_graph
-from models.graph_generator import GraphGeneratorManager
+from utils.graph_generator import GraphGeneratorManager
+from itertools import product
+from glob import glob
 
 
-def run_algorithms(file_path: str) -> None:
-    graph = parse_graph_with_demands(file_path)
+def run_algorithms_in_folder(root_folder: str) -> None:
+    txt_files = glob(os.path.join(root_folder, "*.txt"))
 
-    visualize_flow_graph(graph, layout='circular', seed=42)
+    report_dir = os.path.join(root_folder, 'reports', time.strftime("%Y-%m-%d_%H-%M-%S"))
+    os.makedirs(report_dir, exist_ok=True)
 
-    initial_temp = 1000
-    cooling_rate = 0.99
-    num_iterations = 1000
+    sa_param_grid = {
+        'initial_temp': [1000, 5000],
+        'cooling_rate': [0.99, 0.95],
+        'num_iterations': [1000, 2000]
+    }
+
+    ga_param_grid = {
+        'population_size': [100, 200],
+        'num_generations': [200, 500],
+        'tournament_size': [5, 7],
+        'elitism_size': [10, 20],
+        'mutation_prob': [0.1, 0.2]
+    }
+
+    sa_combinations = [dict(zip(sa_param_grid, v)) for v in product(*sa_param_grid.values())]
+    ga_combinations = [dict(zip(ga_param_grid, v)) for v in product(*ga_param_grid.values())]
 
     algorithms = [
-        # BruteForce(),
-        # SimulatedAnnealing(initial_temp=initial_temp,
-        #                    cooling_rate=cooling_rate,
-        #                    num_iterations=num_iterations),
-        GeneticAlgorithm(population_size=200,
-                         num_generations=350,
-                         tournament_size=7,
-                         elitism_size=20,
-                         mutation_prob=0.1)
+        (BruteForce, [{}]),
+        (SimulatedAnnealing, sa_combinations),
+        (GeneticAlgorithm, ga_combinations)
     ]
 
-    for algorithm in algorithms:
-        runner = Runner(algorithm, graph)
-        runner.run()
-        print('*' * 50)
+    for txt_file in txt_files:
+        try:
+            graph = parse_graph_with_demands(txt_file)
+        except Exception as e:
+            print(f"Error parsing file {txt_file}: {str(e)}. Skipping.")
+            continue
+
+        example_name = os.path.splitext(os.path.basename(txt_file))[0]
+        report_file = os.path.join(report_dir, f"{example_name}_{time.time()}_report.csv")
+
+        for algorithm_class, param_combinations in algorithms:
+            for params in param_combinations:
+                print(f"Running {algorithm_class.__name__} on {example_name} with params: {params}")
+                runner = Runner(algorithm_class, graph, params, report_file)
+                runner.run(LogLevel.INFO)
+                print('*' * 50)
 
 
 def generate_graphs(output_dir: str) -> None:
@@ -64,8 +88,8 @@ def main() -> None:
         generate_graphs(output_dir=generated_graphs_path)
 
     elif args.action == "run":
-        file_path = "./resources/generated/medium_graph_balanced_65726bcf.txt"
-        run_algorithms(file_path=file_path)
+        root_path = "./resources/examples/"
+        run_algorithms_in_folder(root_path)
 
 
 if __name__ == "__main__":

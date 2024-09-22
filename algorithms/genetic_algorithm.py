@@ -7,12 +7,13 @@ from models.individual import Individual
 
 class GeneticAlgorithm(BaseFlowAlgorithm):
 
-    def __init__(self, population_size, num_generations, tournament_size, elitism_size, mutation_prob):
-        self.population_size = population_size
-        self.num_generations = num_generations
-        self.tournament_size = tournament_size
-        self.elitism_size = elitism_size
-        self.mutation_prob = mutation_prob
+    def __init__(self, params: dict):
+        super().__init__(params)
+        self.population_size = params.get('population_size', 100)
+        self.num_generations = params.get('num_generations', 500)
+        self.tournament_size = params.get('tournament_size', 5)
+        self.elitism_size = params.get('elitism_size', 5)
+        self.mutation_prob = params.get('mutation_prob', 0.01)
 
     @staticmethod
     def selection(population, tournament_size) -> Individual:

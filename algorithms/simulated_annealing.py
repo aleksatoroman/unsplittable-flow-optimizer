@@ -8,10 +8,11 @@ from utils.utils import GraphUtils
 
 
 class SimulatedAnnealing(BaseFlowAlgorithm):
-    def __init__(self, initial_temp: float, cooling_rate: float, num_iterations: int):
-        self.initial_temp = initial_temp
-        self.cooling_rate = cooling_rate
-        self.num_iterations = num_iterations
+    def __init__(self, params: dict):
+        super().__init__(params)
+        self.initial_temp = params.get('initial_temp', 100.0)
+        self.cooling_rate = params.get('cooling_rate', 0.95)
+        self.num_iterations = params.get('num_iterations', 1000)
 
     def solve(self, graph: FlowGraph) -> FlowResult | None:
         current_solution = GraphUtils.generate_initial_solution(graph)
