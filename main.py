@@ -75,19 +75,12 @@ def generate_graphs(output_dir: str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Flow Graph Generator and Algorithm Runner")
+
     parser.add_argument("--action", type=str, choices=["generate", "run"], required=True, help="Action to perform (generate or run)")
     parser.add_argument("--algorithms", type=str, required=False, help="Algorithms to as run as comma separated list (brute-force, genetic, simulated-annealing)")
+    parser.add_argument("--examples", type=str, required=False, help="Root folder of examples to run algorithms on")
 
     args = parser.parse_args()
-
-    algorithms = []
-    if args.algorithms:
-        algorithms = args.algorithms.split(",")
-        algorithms = [algorithm.strip() for algorithm in algorithms]
-        if not all(algorithm in ["brute-force", "genetic", "simulated-annealing"] for algorithm in algorithms):
-            return
-    else:
-        algorithms = ["brute-force", "genetic", "simulated-annealing"]
 
     generated_graphs_path = "./resources/generated"
 
@@ -101,7 +94,18 @@ def main() -> None:
         generate_graphs(output_dir=generated_graphs_path)
 
     elif args.action == "run":
-        root_path = "./resources/examples/"
+        if args.algorithms:
+            algorithms = args.algorithms.split(",")
+            algorithms = [algorithm.strip() for algorithm in algorithms]
+            if not all(algorithm in ["brute-force", "genetic", "simulated-annealing"] for algorithm in algorithms):
+                return
+        else:
+            algorithms = ["brute-force", "genetic", "simulated-annealing"]
+
+        if args.examples:
+            root_path = args.examples
+        else:
+            root_path = "./resources/examples/"
         run_algorithms_in_folder(root_path, algorithms)
 
 
