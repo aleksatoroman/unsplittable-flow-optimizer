@@ -1,6 +1,7 @@
 import argparse
 import os
 import time
+from typing import List
 from algorithms.brute_force import BruteForce
 from algorithms.genetic_algorithm import GeneticAlgorithm
 from algorithms.simulated_annealing import SimulatedAnnealing
@@ -12,7 +13,7 @@ from itertools import product
 from glob import glob
 
 
-def run_algorithms_in_folder(root_folder: str) -> None:
+def run_algorithms_in_folder(root_folder: str, algorithm_names: List[str]) -> None:
     txt_files = glob(os.path.join(root_folder, "*.txt"))
 
     sa_param_grid = {
@@ -32,11 +33,13 @@ def run_algorithms_in_folder(root_folder: str) -> None:
     sa_combinations = [dict(zip(sa_param_grid, v)) for v in product(*sa_param_grid.values())]
     ga_combinations = [dict(zip(ga_param_grid, v)) for v in product(*ga_param_grid.values())]
 
-    algorithms = [
-        (BruteForce, [{}]),
-        (SimulatedAnnealing, sa_combinations),
-        (GeneticAlgorithm, ga_combinations)
-    ]
+    algorithms = []
+    if "brute-force" in algorithm_names:
+        algorithms.append((BruteForce, [{}]))
+    if "genetic" in algorithm_names:
+        algorithms.append((GeneticAlgorithm, ga_combinations))
+    if "simulated-annealing" in algorithm_names:
+        algorithms.append((SimulatedAnnealing, sa_combinations))
 
     timestamp = time.strftime("%Y-%m-%d_%H_%M_%S")
     for txt_file in txt_files:
@@ -73,8 +76,18 @@ def generate_graphs(output_dir: str) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Flow Graph Generator and Algorithm Runner")
     parser.add_argument("--action", type=str, choices=["generate", "run"], required=True, help="Action to perform (generate or run)")
+    parser.add_argument("--algorithms", type=str, required=False, help="Algorithms to as run as comma separated list (brute-force, genetic, simulated-annealing)")
 
     args = parser.parse_args()
+
+    algorithms = []
+    if args.algorithms:
+        algorithms = args.algorithms.split(",")
+        algorithms = [algorithm.strip() for algorithm in algorithms]
+        if not all(algorithm in ["brute-force", "genetic", "simulated-annealing"] for algorithm in algorithms):
+            return
+    else:
+        algorithms = ["brute-force", "genetic", "simulated-annealing"]
 
     generated_graphs_path = "./resources/generated"
 
@@ -89,7 +102,7 @@ def main() -> None:
 
     elif args.action == "run":
         root_path = "./resources/examples/"
-        run_algorithms_in_folder(root_path)
+        run_algorithms_in_folder(root_path, algorithms)
 
 
 if __name__ == "__main__":
