@@ -2,6 +2,8 @@ import argparse
 import os
 import time
 from typing import List
+
+from algorithms.base_algorithm import BaseFlowAlgorithm
 from algorithms.brute_force import BruteForce
 from algorithms.genetic_algorithm import GeneticAlgorithm
 from algorithms.simulated_annealing import SimulatedAnnealing
@@ -11,6 +13,19 @@ from utils.graph_parser import parse_graph_with_demands
 from utils.graph_generator import GraphGeneratorManager
 from itertools import product
 from glob import glob
+
+from utils.graph_visualizer import visualize_flow_graph
+
+
+def get_algorithms(algorithm_names: List[str]):
+    algorithms = []
+    if "brute-force" in algorithm_names:
+        algorithms.append(BruteForce)
+    if "genetic" in algorithm_names:
+        algorithms.append(GeneticAlgorithm)
+    if "simulated-annealing" in algorithm_names:
+        algorithms.append(SimulatedAnnealing)
+    return algorithms
 
 
 def run_algorithms_in_folder(root_folder: str, algorithm_names: List[str]) -> None:
@@ -33,13 +48,7 @@ def run_algorithms_in_folder(root_folder: str, algorithm_names: List[str]) -> No
     sa_combinations = [dict(zip(sa_param_grid, v)) for v in product(*sa_param_grid.values())]
     ga_combinations = [dict(zip(ga_param_grid, v)) for v in product(*ga_param_grid.values())]
 
-    algorithms = []
-    if "brute-force" in algorithm_names:
-        algorithms.append((BruteForce, [{}]))
-    if "genetic" in algorithm_names:
-        algorithms.append((GeneticAlgorithm, ga_combinations))
-    if "simulated-annealing" in algorithm_names:
-        algorithms.append((SimulatedAnnealing, sa_combinations))
+    algorithms = get_algorithms(algorithm_names)
 
     timestamp = time.strftime("%Y-%m-%d_%H_%M_%S")
     for txt_file in txt_files:
@@ -76,7 +85,7 @@ def generate_graphs(output_dir: str) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Flow Graph Generator and Algorithm Runner")
 
-    parser.add_argument("--action", type=str, choices=["generate", "run"], required=True, help="Action to perform (generate or run)")
+    parser.add_argument("--action", type=str, choices=["generate", "run", "run-single"], required=True, help="Action to perform (generate or run)")
     parser.add_argument("--algorithms", type=str, required=False, help="Algorithms to as run as comma separated list (brute-force, genetic, simulated-annealing)")
     parser.add_argument("--examples", type=str, required=False, help="Root folder of examples to run algorithms on")
 
@@ -92,6 +101,26 @@ def main() -> None:
             for file in files:
                 os.remove(os.path.join(generated_graphs_path, file))
         generate_graphs(output_dir=generated_graphs_path)
+    elif args.action == "run-single":
+        file_path = "./resources/examples/2b.txt"
+        graph = parse_graph_with_demands(file_path)
+
+        visualize_flow_graph(graph, 'circular')
+
+        if args.algorithms:
+            algorithm_names = args.algorithms.split(",")
+            algorithm_names = [algorithm.strip() for algorithm in algorithm_names]
+            if not all(algorithm in ["brute-force", "genetic", "simulated-annealing"] for algorithm in algorithm_names):
+                return
+        else:
+            algorithm_names = ["brute-force", "genetic", "simulated-annealing"]
+
+        algorithms = get_algorithms(algorithm_names)
+        for algorithm_class in algorithms:
+            print(f"Running {algorithm_class.__name__} on {file_path} with default params")
+            runner = Runner(algorithm_class, graph, {}, None)
+            runner.run(LogLevel.INFO)
+            print('*' * 50)
 
     elif args.action == "run":
         if args.algorithms:
