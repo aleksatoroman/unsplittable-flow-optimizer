@@ -46,32 +46,46 @@ class GraphUtils:
 
         current_path = demand_to_modify.path
 
-        random_node_index = random.randint(0, len(current_path) - 2)
-        start_node = current_path[random_node_index]
-        random_node_index2 = random.randint(random_node_index + 1, len(current_path) - 1)
-        end_node = current_path[random_node_index2]
+        if len(current_path) == 2:
+            random_node_index = 0
+            random_node_index2 = 1
+            start_node, end_node = current_path[0], current_path[1]
+        else:
+            random_node_index = random.randint(0, len(current_path) - 2)
+            start_node = current_path[random_node_index]
+            random_node_index2 = random.randint(random_node_index + 1, len(current_path) - 1)
+            end_node = current_path[random_node_index2]
+
 
         spliced_portion = tuple(current_path[random_node_index:random_node_index2 + 1])
 
-        max_attempts = 10
+        max_attempts = 15
         attempt = 0
 
         while attempt < max_attempts:
             alternative_path = GraphUtils.find_random_path(graph, start_node, end_node,
                                                            exclude_paths={spliced_portion})
 
-            if alternative_path:
-                if not set(alternative_path).intersection(set(current_path[:random_node_index])) and \
-                        not set(alternative_path).intersection(set(current_path[random_node_index2 + 1:])):
-                    modified_path = current_path[:random_node_index] + alternative_path + current_path[
-                                                                                          random_node_index2 + 1:]
+            if len(alternative_path) == 0:
+                random_node_index = random.randint(0, len(current_path) - 2)
+                start_node = current_path[random_node_index]
+                random_node_index2 = random.randint(random_node_index + 1, len(current_path) - 1)
+                end_node = current_path[random_node_index2]
+                spliced_portion = tuple(current_path[random_node_index:random_node_index2 + 1])
+                attempt += 1
+                continue
 
-                    new_flow_paths = [
-                        FlowPath(source=fp.source, sink=fp.sink,
-                                 path=fp.path if fp != demand_to_modify else modified_path, flow=fp.flow)
-                        for fp in flow_paths
-                    ]
-                    return FlowResult(flow_paths=new_flow_paths, edges=graph.get_edges_with_capacities())
+            if not set(alternative_path).intersection(set(current_path[:random_node_index])) and \
+                    not set(alternative_path).intersection(set(current_path[random_node_index2 + 1:])):
+                modified_path = current_path[:random_node_index] + alternative_path + current_path[
+                                                                                      random_node_index2 + 1:]
+
+                new_flow_paths = [
+                    FlowPath(source=fp.source, sink=fp.sink,
+                             path=fp.path if fp != demand_to_modify else modified_path, flow=fp.flow)
+                    for fp in flow_paths
+                ]
+                return FlowResult(flow_paths=new_flow_paths, edges=graph.get_edges_with_capacities())
 
             attempt += 1
 
@@ -84,7 +98,13 @@ class GraphUtils:
         sink, index = demand_key
         demand_to_modify = flow_paths[index]
 
-        new_path = GraphUtils.find_random_path(graph, demand_to_modify.source, demand_to_modify.sink)
+        exclude_paths = {tuple(demand_to_modify.path)}
+
+        new_path = GraphUtils.find_random_path(graph, demand_to_modify.source, demand_to_modify.sink,
+                                               exclude_paths=exclude_paths)
+
+        if len(new_path) == 0:
+            return current_solution
 
         new_flow_paths = [
             FlowPath(

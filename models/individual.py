@@ -1,4 +1,3 @@
-from models.flow_result import FlowResult
 from models.graph import FlowGraph
 from utils.utils import GraphUtils
 import random

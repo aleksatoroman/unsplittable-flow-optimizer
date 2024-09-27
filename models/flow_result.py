@@ -43,6 +43,8 @@ class FlowResult:
 
         return True
 
+
+
     def calculate_max_flow_to_capacity_ratio(self) -> float:
 
         edge_flows = self.calculate_edge_flows()
@@ -60,6 +62,17 @@ class FlowResult:
             max_flow_to_capacity_ratio = max(max_flow_to_capacity_ratio, flow_to_capacity_ratio)
 
         return max_flow_to_capacity_ratio + penalty
+
+    def calculate_overflow(self) -> float:
+        edge_flows = self.calculate_edge_flows()
+        total_overflow = 0.0
+
+        for edge, flow in edge_flows.items():
+            capacity = self.edges[edge]
+            if flow > capacity:
+                total_overflow += (flow - capacity)
+
+        return total_overflow
 
     def info(self, level: LogLevel) -> None:
         for flow_path in self.flow_paths:
