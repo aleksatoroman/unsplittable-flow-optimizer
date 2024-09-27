@@ -56,19 +56,24 @@ class GeneticAlgorithm(BaseFlowAlgorithm):
 
         for i in range(self.num_generations):
             population.sort(key=lambda x: x.fitness, reverse=True)
+
             new_population[:self.elitism_size] = population[:self.elitism_size]
 
             for j in range(self.elitism_size, self.population_size, 2):
                 parent1 = GeneticAlgorithm.selection(population, self.tournament_size)
-                parent2 = GeneticAlgorithm.selection(population, self.tournament_size) # TODO: same parent1 and parent2
+                parent2 = GeneticAlgorithm.selection(population, self.tournament_size)
 
-                GeneticAlgorithm.crossover(parent1, parent2, child1=new_population[j], child2=new_population[j + 1])
+                if j + 1 >= self.population_size:
+                    new_population[j].mutate(self.mutation_prob)
+                    new_population[j].fitness = new_population[j].calc_fitness()
+                else:
+                    GeneticAlgorithm.crossover(parent1, parent2, child1=new_population[j], child2=new_population[j + 1])
+                    new_population[j].mutate(self.mutation_prob)
+                    new_population[j + 1].mutate(self.mutation_prob)
 
-                new_population[j].mutate(self.mutation_prob)
-                new_population[j+1].mutate(self.mutation_prob)
-
-                new_population[j].fitness = new_population[j].calc_fitness()
-                new_population[j + 1].fitness = new_population[j + 1].calc_fitness()
+                    new_population[j].fitness = new_population[j].calc_fitness()
+                    new_population[j + 1].fitness = new_population[j + 1].calc_fitness()
 
         max_individual = max(population, key=lambda x: x.fitness)
         return max_individual.code
+

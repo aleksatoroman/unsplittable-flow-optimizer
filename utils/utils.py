@@ -6,12 +6,16 @@ import random
 
 class GraphUtils:
     @staticmethod
-    def find_random_path(graph: FlowGraph, source: int, destination: int) -> List[int]:
+    def find_random_path(graph: FlowGraph, source: int, destination: int, exclude_paths: set = None) -> List[int]:
         def dfs(current_node: int, destination_dfs: int, visited: set, path: List[int]) -> List[int]:
             path.append(current_node)
 
             if current_node == destination_dfs:
-                return path
+                if exclude_paths is None or tuple(path) not in exclude_paths:
+                    return path
+                else:
+                    path.pop()
+                    return []
 
             visited.add(current_node)
 
@@ -30,7 +34,8 @@ class GraphUtils:
         return dfs(source, destination, set(), [])
 
     @staticmethod
-    def generate_neighbor(current_solution: FlowResult, graph: FlowGraph, demand_key: Tuple[int, int] | None = None) -> FlowResult:
+    def generate_neighbor(current_solution: FlowResult, graph: FlowGraph,
+                          demand_key: Tuple[int, int] | None = None) -> FlowResult:
         flow_paths = current_solution.flow_paths
 
         if demand_key is not None:
@@ -41,23 +46,29 @@ class GraphUtils:
 
         current_path = demand_to_modify.path
 
+        random_node_index = random.randint(0, len(current_path) - 2)
+        start_node = current_path[random_node_index]
+        random_node_index2 = random.randint(random_node_index + 1, len(current_path) - 1)
+        end_node = current_path[random_node_index2]
+
+        spliced_portion = tuple(current_path[random_node_index:random_node_index2 + 1])
+
         max_attempts = 10
         attempt = 0
 
         while attempt < max_attempts:
-            random_node_index = random.randint(0, len(current_path) - 2)
-            start_node = current_path[random_node_index]
-            random_node_index2 = random.randint(random_node_index + 1, len(current_path) - 1)
-            end_node = current_path[random_node_index2]
-
-            alternative_path = GraphUtils.find_random_path(graph, start_node, end_node)
+            alternative_path = GraphUtils.find_random_path(graph, start_node, end_node,
+                                                           exclude_paths={spliced_portion})
 
             if alternative_path:
-                modified_path = current_path[:random_node_index] + alternative_path + current_path[random_node_index2 + 1:]
+                if not set(alternative_path).intersection(set(current_path[:random_node_index])) and \
+                        not set(alternative_path).intersection(set(current_path[random_node_index2 + 1:])):
+                    modified_path = current_path[:random_node_index] + alternative_path + current_path[
+                                                                                          random_node_index2 + 1:]
 
-                if modified_path != current_path:
                     new_flow_paths = [
-                        FlowPath(source=fp.source, sink=fp.sink, path=fp.path if fp != demand_to_modify else modified_path, flow=fp.flow)
+                        FlowPath(source=fp.source, sink=fp.sink,
+                                 path=fp.path if fp != demand_to_modify else modified_path, flow=fp.flow)
                         for fp in flow_paths
                     ]
                     return FlowResult(flow_paths=new_flow_paths, edges=graph.get_edges_with_capacities())
@@ -65,6 +76,26 @@ class GraphUtils:
             attempt += 1
 
         return current_solution
+
+    @staticmethod
+    def reroute_entire_demand(current_solution: FlowResult, graph: FlowGraph,
+                              demand_key: Tuple[int, int]) -> FlowResult:
+        flow_paths = current_solution.flow_paths
+        sink, index = demand_key
+        demand_to_modify = flow_paths[index]
+
+        new_path = GraphUtils.find_random_path(graph, demand_to_modify.source, demand_to_modify.sink)
+
+        new_flow_paths = [
+            FlowPath(
+                source=fp.source,
+                sink=fp.sink,
+                path=fp.path if fp != demand_to_modify else new_path,
+                flow=fp.flow
+            )
+            for fp in flow_paths
+        ]
+        return FlowResult(flow_paths=new_flow_paths, edges=graph.get_edges_with_capacities())
 
     @staticmethod
     def generate_initial_solution(graph: FlowGraph) -> FlowResult:

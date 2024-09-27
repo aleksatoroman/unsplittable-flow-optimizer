@@ -7,6 +7,7 @@ from algorithms.base_algorithm import BaseFlowAlgorithm
 from algorithms.brute_force import BruteForce
 from algorithms.genetic_algorithm import GeneticAlgorithm
 from algorithms.simulated_annealing import SimulatedAnnealing
+from algorithms.vns import VNSAlgorithm
 from models.log_level import LogLevel
 from models.runner import Runner
 from utils.graph_parser import parse_graph_with_demands
@@ -25,6 +26,8 @@ def get_algorithms(algorithm_names: List[str]):
         algorithms.append(GeneticAlgorithm)
     if "simulated-annealing" in algorithm_names:
         algorithms.append(SimulatedAnnealing)
+    if "vns" in algorithm_names:
+        algorithms.append(VNSAlgorithm)
     return algorithms
 
 
@@ -45,10 +48,27 @@ def run_algorithms_in_folder(root_folder: str, algorithm_names: List[str]) -> No
         'mutation_prob': [0.1, 0.2]
     }
 
+    vns_param_grid = {
+        'k_min': [1, 2],
+        'k_max': [3, 5],
+        'time_limit': [300, 600],
+        'move_prob': [0.1, 0.2],
+        'reroute_entire_path_prob': [0.3, 0.5]
+    }
+
     sa_combinations = [dict(zip(sa_param_grid, v)) for v in product(*sa_param_grid.values())]
     ga_combinations = [dict(zip(ga_param_grid, v)) for v in product(*ga_param_grid.values())]
+    vns_combinations = [dict(zip(vns_param_grid, v)) for v in product(*vns_param_grid.values())]
 
-    algorithms = get_algorithms(algorithm_names)
+    algorithms = []
+    if "brute-force" in algorithm_names:
+        algorithms.append((BruteForce, [{}]))
+    if "genetic" in algorithm_names:
+        algorithms.append((GeneticAlgorithm, ga_combinations))
+    if "simulated-annealing" in algorithm_names:
+        algorithms.append((SimulatedAnnealing, sa_combinations))
+    if "vns" in algorithm_names:
+        algorithms.append((VNSAlgorithm, vns_combinations))
 
     timestamp = time.strftime("%Y-%m-%d_%H_%M_%S")
     for txt_file in txt_files:
@@ -86,7 +106,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Flow Graph Generator and Algorithm Runner")
 
     parser.add_argument("--action", type=str, choices=["generate", "run", "run-single"], required=True, help="Action to perform (generate or run)")
-    parser.add_argument("--algorithms", type=str, required=False, help="Algorithms to as run as comma separated list (brute-force, genetic, simulated-annealing)")
+    parser.add_argument("--algorithms", type=str, required=False, help="Algorithms to as run as comma separated list (brute-force, genetic, simulated-annealing, vns)")
     parser.add_argument("--examples", type=str, required=False, help="Root folder of examples to run algorithms on")
 
     args = parser.parse_args()
@@ -110,10 +130,10 @@ def main() -> None:
         if args.algorithms:
             algorithm_names = args.algorithms.split(",")
             algorithm_names = [algorithm.strip() for algorithm in algorithm_names]
-            if not all(algorithm in ["brute-force", "genetic", "simulated-annealing"] for algorithm in algorithm_names):
+            if not all(algorithm in ["brute-force", "genetic", "simulated-annealing", "vns"] for algorithm in algorithm_names):
                 return
         else:
-            algorithm_names = ["brute-force", "genetic", "simulated-annealing"]
+            algorithm_names = ["brute-force", "genetic", "simulated-annealing", "vns"]
 
         algorithms = get_algorithms(algorithm_names)
         for algorithm_class in algorithms:
@@ -126,10 +146,10 @@ def main() -> None:
         if args.algorithms:
             algorithms = args.algorithms.split(",")
             algorithms = [algorithm.strip() for algorithm in algorithms]
-            if not all(algorithm in ["brute-force", "genetic", "simulated-annealing"] for algorithm in algorithms):
+            if not all(algorithm in ["brute-force", "genetic", "simulated-annealing", "vns"] for algorithm in algorithms):
                 return
         else:
-            algorithms = ["brute-force", "genetic", "simulated-annealing"]
+            algorithms = ["brute-force", "genetic", "simulated-annealing", "vns"]
 
         if args.examples:
             root_path = args.examples
