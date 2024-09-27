@@ -6,7 +6,9 @@ import random
 
 class GraphUtils:
     @staticmethod
-    def find_random_path(graph: FlowGraph, source: int, destination: int, exclude_paths: set = None) -> List[int]:
+    def find_random_path(graph: FlowGraph, source: int, destination: int, exclude_paths: set = None,
+                         cycle_nodes: set = None) -> List[int]:
+
         def dfs(current_node: int, destination_dfs: int, visited: set, path: List[int]) -> List[int]:
             path.append(current_node)
 
@@ -23,7 +25,7 @@ class GraphUtils:
             random.shuffle(neighbors)
 
             for neighbor in neighbors:
-                if neighbor not in visited:
+                if neighbor not in visited and (cycle_nodes is None or neighbor not in cycle_nodes):
                     result = dfs(neighbor, destination_dfs, visited, path)
                     if result:
                         return result
@@ -56,15 +58,21 @@ class GraphUtils:
             random_node_index2 = random.randint(random_node_index + 1, len(current_path) - 1)
             end_node = current_path[random_node_index2]
 
-
         spliced_portion = tuple(current_path[random_node_index:random_node_index2 + 1])
 
-        max_attempts = 15
+        cycle_nodes = set(current_path[:random_node_index] + current_path[random_node_index2 + 1:])
+
+        max_attempts = 10
         attempt = 0
 
         while attempt < max_attempts:
-            alternative_path = GraphUtils.find_random_path(graph, start_node, end_node,
-                                                           exclude_paths={spliced_portion})
+            alternative_path = GraphUtils.find_random_path(
+                graph,
+                start_node,
+                end_node,
+                exclude_paths={spliced_portion},
+                cycle_nodes=cycle_nodes
+            )
 
             if len(alternative_path) == 0:
                 random_node_index = random.randint(0, len(current_path) - 2)
@@ -72,11 +80,11 @@ class GraphUtils:
                 random_node_index2 = random.randint(random_node_index + 1, len(current_path) - 1)
                 end_node = current_path[random_node_index2]
                 spliced_portion = tuple(current_path[random_node_index:random_node_index2 + 1])
+                cycle_nodes = set(current_path[:random_node_index] + current_path[random_node_index2 + 1:])
                 attempt += 1
                 continue
 
-            if not set(alternative_path).intersection(set(current_path[:random_node_index])) and \
-                    not set(alternative_path).intersection(set(current_path[random_node_index2 + 1:])):
+            if not set(alternative_path).intersection(cycle_nodes):
                 modified_path = current_path[:random_node_index] + alternative_path + current_path[
                                                                                       random_node_index2 + 1:]
 
