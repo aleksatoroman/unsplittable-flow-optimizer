@@ -4,7 +4,7 @@ from copy import deepcopy
 
 from algorithms.base_algorithm import BaseFlowAlgorithm
 from models.graph import FlowGraph
-from models.flow_result import FlowResult, FlowPath
+from models.flow_result import FlowResult
 from utils.utils import GraphUtils
 
 
@@ -21,17 +21,17 @@ class VNSAlgorithm(BaseFlowAlgorithm):
         start_time = perf_counter()
 
         solution = GraphUtils.generate_initial_solution(graph)
-        value = solution.calculate_max_flow_to_capacity_ratio()
+        current_score = solution.calculate_score()
 
         for _ in range(self.num_iterations):
             for k in range(self.k_min, self.k_max):
                 new_solution = self.shaking(solution, graph, k)
-                new_value = new_solution.calculate_max_flow_to_capacity_ratio()
+                new_score = new_solution.calculate_score()
 
-                new_solution, new_value = self.local_search(new_solution, new_value, graph)
+                new_solution, new_score = self.local_search(new_solution, new_score, graph)
 
-                if new_value < value or (new_value == value and random.random() < self.move_prob):
-                    value = new_value
+                if new_score > current_score or (new_score == current_score and random.random() < self.move_prob):
+                    current_score = new_score
                     solution = deepcopy(new_solution)
 
         return solution
@@ -41,9 +41,9 @@ class VNSAlgorithm(BaseFlowAlgorithm):
         return self.multi_path_modification(solution, graph, num_demands_to_modify)
 
     @staticmethod
-    def local_search(solution: FlowResult, value: float, graph: FlowGraph) -> (FlowResult, float):
+    def local_search(solution: FlowResult, score: float, graph: FlowGraph) -> (FlowResult, float):
         new_solution = deepcopy(solution)
-        current_value = value
+        current_score = score
         improved = True
 
         while improved:
@@ -52,19 +52,16 @@ class VNSAlgorithm(BaseFlowAlgorithm):
             random.shuffle(demand_order)
 
             for i in demand_order:
-                modified_solution = GraphUtils.generate_neighbor(new_solution, graph,
-                                                           demand_key=(new_solution.flow_paths[i].sink, i))
-                new_value = modified_solution.calculate_max_flow_to_capacity_ratio()
+                modified_solution = GraphUtils.generate_neighbor(new_solution, graph, demand_key=(new_solution.flow_paths[i].sink, i))
+                new_score = modified_solution.calculate_score()
 
-                if new_value < current_value:
+                if new_score > current_score:
                     new_solution = deepcopy(modified_solution)
-                    current_value = new_value
+                    current_score = new_score
                     improved = True
                     break
 
-        return new_solution, current_value
-
-
+        return new_solution, current_score
 
     @staticmethod
     def multi_path_modification(current_solution: FlowResult, graph: FlowGraph, num_demands_to_modify: int,

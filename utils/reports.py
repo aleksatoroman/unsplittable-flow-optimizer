@@ -17,6 +17,7 @@ def write_report_to_csv(file_path, algorithm_name, params, elapsed_time, flow_re
         feasible = flow_result.is_feasible()
         max_ratio = flow_result.calculate_max_flow_to_capacity_ratio()
         overflow = flow_result.calculate_overflow()
+        score = flow_result.calculate_score()
 
         row = [
             algorithm_name,
@@ -24,7 +25,8 @@ def write_report_to_csv(file_path, algorithm_name, params, elapsed_time, flow_re
             f"{elapsed_time:.4f}",
             feasible,
             f"{max_ratio:.4f}",
-            f"{overflow:.4f}"
+            f"{overflow:.4f}",
+            f"{score:.4f}"
         ]
 
         writer.writerow(row)

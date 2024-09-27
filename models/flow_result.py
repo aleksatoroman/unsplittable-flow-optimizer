@@ -43,6 +43,26 @@ class FlowResult:
 
         return True
 
+    def calculate_score(self) -> float:
+        total_penalty = 0
+        feasible = True
+
+        edge_flows = self.calculate_edge_flows()
+        capacities = self.edges
+
+        for edge, flow in edge_flows.items():
+            capacity = capacities[edge]
+            if flow > capacity:
+                overflow = flow - capacity
+                total_penalty += overflow
+                feasible = False
+
+        if feasible:
+            max_flow_to_capacity_ratio = self.calculate_max_flow_to_capacity_ratio()
+            return 1 - max_flow_to_capacity_ratio
+        else:
+            return -(1 + total_penalty)
+
 
 
     def calculate_max_flow_to_capacity_ratio(self) -> float:
