@@ -213,7 +213,7 @@ def main() -> None:
     elif args.action == "run-single":
         if not args.example:
             print("You must provide an example file path using --example, using default path")
-            file_path = "./resources/examples/2b.txt"
+            file_path = "./resources/examples/1.txt"
         else:
             file_path = args.example
 

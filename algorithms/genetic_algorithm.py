@@ -10,10 +10,12 @@ class GeneticAlgorithm(BaseFlowAlgorithm):
 
     def __init__(self, params: dict):
         super().__init__(params)
-        self.population_size = params.get('population_size', 100)
+        self.population_size = params.get('population_size', 400)
         self.tournament_size = params.get('tournament_size', 5)
-        self.elitism_size = params.get('elitism_size', 5)
-        self.mutation_prob = params.get('mutation_prob', 0.05)
+        self.elitism_size = params.get('elitism_size', 15)
+        self.mutation_prob = params.get('mutation_prob', 0.1)
+        self.no_improvement_threshold = params.get('no_improvement_threshold', 300)
+
 
     @staticmethod
     def selection(population, tournament_size) -> Individual:
