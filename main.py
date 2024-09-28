@@ -91,7 +91,7 @@ def run_algorithms_in_folder(root_folder: str, algorithm_names: List[str]) -> No
 
                 print(f"Running {algorithm_class.__name__} on {example_name} with params: {params}")
                 runner = Runner(algorithm_class, graph, params, report_dir)
-                runner.run(LogLevel.OFF)
+                runner.run(LogLevel.INFO)
                 print('*' * 50)
 
 

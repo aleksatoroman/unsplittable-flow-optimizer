@@ -28,6 +28,8 @@ The Single-Source Unsplittable Flow Problem (SSUFP) is a well-known problem in n
 
 \noindent \textbf{Problem Statement:}
 
+\
+
 \begin{itemize}
     \item \textbf{Instance:} A directed graph $G=(V, E)$ with edge capacities $c: E \to \mathbb{Z}^+$, a source node $s$, and $k$ sinks $t_1, \ldots, t_k$, each with a demand $\rho_i$. Each demand $\rho_i$ must be routed along a single path from $s$ to $t_i$. Additionally, each vertex can have any number of sinks.
     \item \textbf{Objective:} Route each demand in such a way that the total flow routed across any edge $e \in E$ is bounded by its capacity, $c(e)$.
@@ -36,14 +38,8 @@ The Single-Source Unsplittable Flow Problem (SSUFP) is a well-known problem in n
 
 \noindent The SSUFP is an NP-hard problem, meaning that there is no known polynomial-time algorithm that can solve all instances optimally. The difficulty of the problem lies in the fact that flows cannot be split across multiple paths for each demand; every demand must be routed along a single path. This constraint introduces significant challenges in finding feasible flow paths, especially as the number of demands or the size of the network increases. \\
 
-\noindent \textbf{Example Problem:} Consider a graph $G$ with 5 nodes and 6 edges, where node $s$ is the source and nodes $t_1, t_2$, and $t_3$ are the sinks. Each edge has a capacity $c(e)$, and each sink has an associated demand $\rho_i$. An example solution would route each demand along a single path, while ensuring that no edge capacity is exceeded. (An illustrative figure and result will be placed here.)
 
 \noindent \textbf{Complexity and Challenges:}
-
-\
-
-\noindent The Single-Source Unsplittable Flow Problem is known to be NP-hard, which implies that it is computationally intractable to find the exact solution for large instances. The primary challenge arises from the unsplittable nature of the flow, meaning that each demand must be routed along a single path. This requirement limits the flexibility in distributing the flow and leads to congestion on certain edges, which increases the difficulty of finding feasible solutions.
-\\
 
 \noindent Several factors increase the complexity of the problem:
 
@@ -64,7 +60,7 @@ The Single-Source Unsplittable Flow Problem (SSUFP) is a well-known problem in n
     \item It is also known that no approximation algorithm can achieve a performance better than \( \frac{3}{2} - \epsilon \) for any $\epsilon > 0$, demonstrating the inherent difficulty of the problem.
 \end{itemize}
 
-\noindent In addition to these approximation algorithms, metaheuristic approaches such as Simulated Annealing, Genetic Algorithms, and Variable Neighborhood Search offer heuristic methods to find near-optimal solutions. These algorithms are particularly useful for large instances where exact methods become impractical.
+\noindent In addition to these approximation algorithms, here we are covering metaheuristic approaches such as Simulated Annealing, Genetic Algorithms, and Variable Neighborhood Search offer heuristic methods to find near-optimal solutions. These algorithms are particularly useful for large instances where exact methods become impractical.
 
 \
 
@@ -83,17 +79,20 @@ The research for solving the Single-Source Unsplittable Flow Problem (SSUFP) was
     \item Analyzing and evaluating the results of the implementations.
 \end{enumerate}
 
-Each of these steps will be elaborated in the subsequent sections.
+\noindent Each of these steps will be elaborated in the subsequent sections.
 
 \subsection{Getting Familiar with the Problem and Literature Review}
 
-The initial phase of the project involved gaining a comprehensive understanding of the Single-Source Unsplittable Flow Problem (SSUFP). This included studying the problem's mathematical formulation, exploring related optimization challenges, and reviewing existing literature on approximation algorithms. Research papers on unsplittable flow problems and related NP-hard network optimization problems provided valuable insights into the complexities and potential solution techniques.
+The initial phase of the project focused on understanding the Single-Source Unsplittable Flow Problem (SSUFP). This involved studying its mathematical formulation, related optimization challenges, and reviewing literature on approximation algorithms. Research on unsplittable flow and NP-hard network problems offered insights into solution techniques and complexities.
+
+\section{Graph Representation and Infrastructure}
 
 \subsection{Creating a Custom Graph Textual Representation}
 
 To represent the input graph for the Single-Source Unsplittable Flow Problem, a custom textual format was designed. This format is easy to parse and process programmatically, and it captures all necessary details, including vertices, edges, capacities, and demands for each sink.
 
-The structure of the graph representation is as follows:
+\noindent The structure of the graph representation is as follows:
+
 \begin{itemize}
     \item The first line contains the number of vertices.
     \item The second line indicates the number of edges.
@@ -136,6 +135,15 @@ The structure of the graph representation is as follows:
 \label{fig:graph_example}
 \end{figure}
 
+\noindent \textbf{Example Solution:}
+\begin{verbatim}
+Path for Flow (Source: 1, Sink: 4, Flow: 3): [1, 2, 4]
+Path for Flow (Source: 1, Sink: 3, Flow: 2): [1, 3]
+Path for Flow (Source: 1, Sink: 3, Flow: 1): [1, 2, 3]
+All constraints satisfied.
+Maximum Flow-to-Capacity Ratio: 0.67
+\end{verbatim}
+
 \subsection{Graph Generation Library for Instance Creation}
 
 In order to effectively test the algorithms, a graph generation library was developed due to the lack of a pre-existing dataset for the Single-Source Unsplittable Flow Problem (SSUFP). Initially, I created a few simple examples that could be manually calculated, serving as a basic test for the algorithms. However, for larger-scale testing and analysis, I implemented a mechanism to generate random graph instances of various sizes.
@@ -156,7 +164,7 @@ In order to effectively test the algorithms, a graph generation library was deve
     
     \item Edge Capacities: Capacities for the edges are assigned randomly within a range of 10 to 40. These capacities represent the maximum flow that each edge can carry.
     
-    \item Demand Generation: Demands for sink vertices are generated based on the type of graph. For balanced graphs, each sink vertex typically has 1 or 2 demands, while for large-demand graphs, each sink can have up to 3 demands. The demand values are random integers, but they are kept small compared to the edge capacities to ensure feasible solutions.
+    \item Demand Generation: Demands for sink vertices are generated based on the type of graph. For balanced graphs, each sink vertex typically has 1 or 2 demands, while for large-demand graphs, each sink can have up to 3 demands. The demand values are random integers, but they are kept small compared to the edge capacities to ensure feasible solutions. Also, each demand cannot be higher than the capacity of any edge in defined graph.
     
     \item Graph Sizes:
     \begin{itemize}
@@ -169,28 +177,31 @@ In order to effectively test the algorithms, a graph generation library was deve
     
 \end{itemize}
 
-\noindent The graph generation library enables the creation of instances with varying complexities, which are crucial for testing and evaluating the performance of the implemented algorithms. Below is a graphical illustration of a randomly generated graph instance (image will be inserted here):
-
 \subsection{Building Core Infrastructure Classes in Python}
 
 To effectively implement and test various algorithms for solving the Single-Source Unsplittable Flow Problem (SSUFP), several core infrastructure components were developed in Python. These include essential classes to represent the graph, demands, and results, as well as utility functions used by the algorithms. The code was designed to be modular and reusable, supporting various hyperparameter configurations and testing scenarios.
 
+\
+
 \noindent \textbf{Core Classes:}
+
 \begin{itemize}
     \item \textbf{Graph Class}: This class represents the underlying network with nodes and edges, storing relevant information such as capacities and connections between vertices as well as list of demands.
     \item \textbf{Demand Class}: Each demand corresponds to a specific sink vertex and its associated demand value, ensuring that the each demand in graph must be routed unsplittably along a single path.
     \item \textbf{Result Class}: This class holds the results of each algorithm run, tracking information such as the time taken, whether the solution was feasible, and the objective function value.
+    \item \textbf{Statistics Class}: For each algorithm run, a separate 'reports.csv' file is generated, containing detailed information about the results. This data is later aggregated to compare the performance of different algorithms and parameter configurations.
+
 \end{itemize}
 
 \noindent \textbf{Utility Functions:}
 In addition to the core classes, several utility functions were implemented to assist the algorithms:
 \begin{itemize}
     \item \textbf{Feasibility Check}: A utility function checks whether a solution is feasible by verifying that the flow on each edge does not exceed its capacity. This operation is of polynomial time complexity.
-    \item \textbf{Random Path Finder}: A depth-first search (DFS) based function is used to find random paths between two nodes. This function is especially useful in metaheuristic algorithms like Simulated Annealing and Genetic Algorithms to explore different routing paths.
+    \item \textbf{Random Path Finder}: A depth-first search (DFS) based function is used to find random paths between two nodes.
 \end{itemize}
 
 \noindent \textbf{Hyperparameter Support:}
-The infrastructure is flexible enough to allow passing different hyperparameters to various algorithms. Similar to the grid search in libraries like \textit{scikit-learn}, different combinations of hyperparameters can be tested to optimize the performance of the algorithms. Parameters such as cooling rate for Simulated Annealing or population size for the Genetic Algorithm can be easily configured via command-line options.
+The infrastructure is flexible enough to allow passing different hyperparameters to various algorithms. Similar to the grid search in libraries like \textit{scikit-learn}, different combinations of hyperparameters can be tested to optimize the performance of the algorithms. Parameters such as cooling rate for Simulated Annealing or population size for the Genetic Algorithm can be modified this way.
 
 \
 
@@ -202,6 +213,7 @@ A root file structure was designed to automatically run different algorithms and
     \item Time taken by the algorithm
     \item Whether the solution was feasible
     \item Objective function value (optimization target)
+    \item ...
 \end{itemize}
 
 \noindent This mechasnism also allows to store different artifacts such as different kinds of plots in well organized structure during the algorithm execution.
@@ -210,7 +222,9 @@ A root file structure was designed to automatically run different algorithms and
 
 \noindent Additionally, a command-line interface allows users to specify which algorithms to run, and where is the root folder of given example instances. The results are automatically exported into an csv file in above mentioned file structure, making it easier to analyze and compare the performance of different algorithms across multiple instances.
 
-Below is an example of the folder structure and a snippet from the result log:
+\
+
+\noindent Below is an example of the folder structure and a snippet from the result log:
 
 \begin{figure}[H]
     \centering
@@ -224,8 +238,9 @@ Below is an example of the folder structure and a snippet from the result log:
     \caption{Snippet of result log showing algorithm details and performance}
 \end{figure}
 
+\section{Algorithm Overview}
 
-\subsection{Algorithm Implementation}
+\subsection{Used Algorithms}
 
 To solve the Single-Source Unsplittable Flow Problem (SSUFP), several algorithms were implemented, each offering different approaches to finding feasible and near-optimal solutions. The algorithms developed include both exact and metaheuristic techniques:
 
@@ -239,19 +254,19 @@ To solve the Single-Source Unsplittable Flow Problem (SSUFP), several algorithms
     \item \textbf{Genetic Algorithm (GA)}: A population-based optimization algorithm that mimics natural selection. The algorithm generates an initial population of solutions and evolves them using operations like crossover and mutation. Over several generations, the population converges towards a feasible and near-optimal solution.
 \end{itemize}
 
-\noindent Each of these algorithms was implemented in Python, leveraging the core infrastructure classes and utility functions described earlier. The flexibility of the infrastructure allowed for easy experimentation with different hyperparameters for each algorithm, facilitating a detailed comparison of their performance.
+\noindent Each of these algorithms were implemented in Python, leveraging the core infrastructure classes and utility functions described earlier.
 
 \
 
-\noindent  In the following sections, we will present the results obtained from each algorithm, how is it implemented, along with a comparison of their effectiveness, execution time, and quality of solutions.
+\noindent  In the following sections, we will present the results obtained from each algorithm, how is it implemented, along with a comparison of their effectiveness and quality of solutions.
 
 \subsection{Brute Force Algorithm}
 
-The Brute Force approach is a simple and exhaustive method used to solve the Single-Source Unsplittable Flow Problem (SSUFP). It retrieves all possible paths from the source to each sink vertex, including cases where sink vertices have multiple demands. Using the NetworkX library, which can efficiently find all simple paths between vertices, this process is straightforward for small graphs.
+The Brute Force method retrieves all possible paths from the source to each sink, including multiple demands for the same sink. Using the NetworkX library to find simple paths, this works well for small graphs.
 
-\noindent Once the paths are retrieved, the algorithm generates all combinations of possible routes using the Cartesian product of the paths for each demand. After generating the combinations, it checks each combination for feasibility by ensuring that the total flow on any edge does not exceed its capacity. For feasible solutions, the algorithm calculates the objective function, which is the maximum congestion over all edges.
+\noindent The algorithm then generates all route combinations using the Cartesian product of the paths and checks each for feasibility. For feasible solutions, it calculates the maximum congestion.
 
-\noindent While this approach works well for small graphs, it becomes computationally infeasible for even moderately complex graphs due to the exponential growth in the number of path combinations. This makes the Brute Force method unsuitable for larger instances.
+\noindent While effective for small graphs, this approach becomes impractical for larger graphs due to the exponential growth in path combinations.
 
 \
 
@@ -276,7 +291,202 @@ Number of paths for each demand: [19, 19, 38, 38, 11]
     \item Time taken: 63.03 seconds
 \end{itemize}
 
-\noindent  While Brute Force provides an exact solution, its time complexity grows exponentially, making it impractical for graphs with many paths and multiple demands. This highlights the need for more scalable, approximate methods like Simulated Annealing and Genetic Algorithms for larger instances.
+\noindent  While Brute Force provides an exact solution, its time complexity grows exponentially, making it impractical for graphs with many paths and multiple demands. This highlights the need for more scalable, approximate methods like Simulated Annealing, VNS and Genetic Algorithms for larger instances.
+
+\subsection{Common Stoppage Criteria for Heuristic Algorithms}
+
+All heuristic algorithms in this project are controlled by two main criteria: maximum execution time and the no\_improvement\_threshold. These criteria ensure that algorithms stop either after a set time or when no further improvements are made.
+
+\begin{itemize}
+    \item \textbf{Maximum Time}: Each algorithm runs for a set time limit, ranging from 20 seconds for small graphs to 2 minutes for larger ones, to balance runtime and exploration.
+    \item \textbf{No\_Improvement\_Threshold}: This defines how many iterations can occur without improvement. For Simulated Annealing, this threshold is higher (100-150 iterations), while for Genetic Algorithms, it’s lower (50-100 iterations).
+\end{itemize}
+
+The parameters adjust with graph size:
+\begin{itemize}
+    \item \textbf{Small Graphs}: Lower limits (20-40 seconds and 50 iterations).
+    \item \textbf{Medium Graphs}: Moderate limits (40-90 seconds and around 100 iterations).
+    \item \textbf{Large Graphs}: Higher limits (up to 2 minutes and 150 iterations).
+\end{itemize}
+
+\noindent These limits can be adjusted for more exploration if computational resources allow but are kept within reasonable bounds to ensure efficient testing and meaningful results.
+
+
+\subsection{Generating Neighbor Solution}
+
+In Simulated Annealing, Variable Neighborhood Search (VNS), and Genetic Algorithms, generating a neighbor solution is key to exploring new options. This function goal is to make randomized slight adjustments in current solution and can be implement in various ways based on problem and solution representation. In our case, this function works in following way:
+
+\begin{itemize}
+    \item It randomly selects demand in available list of demands.
+    \item It randomly selects two nodes in the previously selected demand flow path (including the source and sink).
+    \item A new path between these two nodes is generated using randomized depth-first search (DFS).
+    \item The new path replaces the selected portion of the original flow path.
+\end{itemize}
+
+To optimize this process:
+\begin{itemize}
+    \item Cycles are avoided by excluding nodes that would form a loop.
+    \item The current path is excluded from consideration to ensure a true modification.
+\end{itemize}
+
+This method is used in Simulated Annealing for exploring new solutions, in VNS to switch between neighborhoods, and in Genetic Algorithms during mutation to introduce variety.
+
+\subsection{Goal Function}
+
+In this problem, there are two key objectives:
+\begin{itemize}
+    \item Find a feasible solution where the flow on every edge does not exceed its capacity.
+    \item Minimize the congestion, measured by: 
+    \[
+    \max_{e \in E} \frac{f(e)}{c(e)},
+    \]
+    where \( f(e) \) is the total flow on edge \( e \) and \( c(e) \) is its capacity.
+\end{itemize}
+
+To achieve this, the goal function follows these rules:
+\begin{itemize}
+    \item Feasible solutions are always prioritized over non-feasible ones.
+    \item Among feasible solutions, the one with the lowest max\_flow\_to\_capacity ratio is considered the best.
+    \item Non-feasible solutions are compared based on the total overflow across all edges, with smaller total overflow being better. This helps guide the algorithm toward feasible solutions.
+\end{itemize}
+
+\
+
+\noindent \textbf{Goal Function Pseudocode:}
+
+\begin{verbatim}
+function calculate_score():
+    total_penalty = 0
+    feasible = True
+    
+    edge_flows = calculate_edge_flows()
+    capacities = edges
+
+    for each edge in edge_flows:
+        flow = edge_flows[edge]
+        capacity = capacities[edge]
+
+        if flow > capacity:
+            overflow = flow - capacity
+            total_penalty += overflow
+            feasible = False
+
+    if feasible:
+        max_flow_to_capacity_ratio = calculate_max_flow_to_capacity_ratio()
+        return 1 - max_flow_to_capacity_ratio
+    else:
+        return -(1 + total_penalty)
+\end{verbatim}
+
+This function ensures that feasible solutions with lower congestion are favored, while non-feasible solutions are penalized based on how much they overflow. This strategy helps navigate the search space toward finding feasible, optimal solutions.
+
+\subsection{Simulated Annealing}
+
+The Simulated Annealing algorithm was implemented to explore the solution space for the Single-Source Unsplittable Flow Problem (SSUFP). The goal is to find feasible solutions while minimizing the congestion, using the previously defined goal function.
+
+\
+
+\noindent \textbf{Parameter Grid:}
+
+\begin{verbatim}
+sa_param_grid = {
+    'initial_temp': [1000, 5000],
+    'cooling_rate': [0.99, 0.95]
+}
+\end{verbatim}
+
+\noindent \textbf{Algorithm Overview:}
+\begin{itemize}
+    \item The algorithm starts with an initial solution where, for each demand, a random path is generated from the source to the sink. If a sink has multiple demands, the method is called separately for each.
+    \item At each iteration, a neighbor solution is generated by altering the current flow paths as described earlier.
+    \item The goal function is used to evaluate each solution, and a solution is accepted based on its score. If the new solution is worse, an acceptance probability is calculated based on the current temperature, allowing worse solutions to be accepted with some likelihood to avoid local optima.
+    
+    \item The temperature gradually decreases according to the cooling rate, reducing the likelihood of accepting worse solutions as the algorithm progresses.
+\end{itemize}
+
+\noindent This standard approach to Simulated Annealing leverages the flexibility of the neighbor generation function and the goal function to guide the search toward feasible and optimal solutions.
+
+\subsection{Variable Neighborhood Search (VNS)}
+
+Variable Neighborhood Search (VNS) is a metaheuristic algorithm that systematically explores different neighborhoods of the solution space. In this implementation, neighborhoods are defined based on the number of demands whose paths will be modified during the shaking process. The algorithm also alternates between small, incremental changes and more significant rerouting of paths.
+
+\
+
+\noindent \textbf{Parameter Grid:}
+
+\begin{verbatim}
+vns_param_grid = {
+    'k_min': [0, 1, 2],
+    'k_max': [3, 5],
+    'move_prob': [0.1, 0.2],
+    'reroute_entire_path_prob': [0.3, 0.5]
+}
+\end{verbatim}
+
+\noindent \textbf{Shaking Process:}
+\begin{itemize}
+    \item Each neighborhood defines how many demands to modify. The number of demands increases as the search moves through larger neighborhoods.
+    \item For each demand selected in the shaking process, there is a probability (between 0.3 and 0.5 based on given params configuration) of performing a full rerouting from the source to the sink, which replaces the entire path with a new one. Otherwise, a small modification is made to the path using the neighbor generation method.
+\end{itemize}
+
+\noindent This dual approach allows the algorithm to explore both small and large modifications, balancing local exploration with more significant changes when necessary.
+
+\
+
+\noindent \textbf{Local Search:}
+After shaking, the local search is applied to refine the solution. The goal is to iteratively improve the solution by making small changes to individual demands. The process works as follows:
+
+\begin{itemize}
+    \item A copy of the current solution is made.
+    \item A randomized order of demands is generated to explore possible improvements.
+    \item For each demand, a neighboring solution is generated by modifying the flow path for that demand.
+    \item The score of the modified solution is calculated using the goal function. If the new score is better, the current solution is replaced with the modified one, and the search continues.
+    \item This process repeats until no further improvements can be made, ensuring the local optimum is reached.
+\end{itemize}
+
+\noindent This combination of shaking and local search allows VNS to efficiently escape local optima by dynamically adjusting the neighborhood size and exploring a variety of solution modifications.
+
+\subsection{Genetic Algorithm (GA)}
+
+The Genetic Algorithm (GA) was implemented to solve the Single-Source Unsplittable Flow Problem (SSUFP) by mimicking the process of natural selection. This involves creating an initial population, selecting the best solutions, and applying crossover and mutation to evolve new generations.
+
+\
+
+\noindent \textbf{Parameter Grid:}
+
+\begin{verbatim}
+ga_param_grid = {
+    'population_size': [100, 200],
+    'num_generations': [200, 500],
+    'tournament_size': [5, 7],
+    'elitism_size': [10, 20],
+    'mutation_prob': [0.1, 0.2]
+}
+\end{verbatim}
+
+\textbf{Algorithm Overview:}
+
+\begin{itemize}
+    \item \textbf{Initial Population:} The initial population is generated in the same way as the initial solution for Simulated Annealing, by finding random paths for each demand. This process is repeated based on the size of the population.
+    
+    \item \textbf{Selection:} Tournament-based selection is used to choose parents for crossover. In each tournament, a subset of individuals is selected at random, and the one with the best fitness is chosen as a parent.
+    
+    \item \textbf{Crossover:} Uniform crossover is applied to combine two parents and create two children. For each demand, there is a 50\% chance of taking the demand path from one parent or the other. The unselected demand path goes to the other child, ensuring both children are formed by mixing parts of their parents' paths.
+
+    \item \textbf{Mutation:} Each demand path in the child solution is mutated with a given probability (mutation\_prob). The mutation is performed using the previously described \textit{generate\_neighbor} method, which modifies part of the path while maintaining feasibility.
+\end{itemize}
+
+\begin{verbatim}
+function mutate(mutation_prob):
+    for each demand path in solution:
+        if random() < mutation_prob:
+            mutate the demand path using generate_neighbor
+\end{verbatim}
+
+\noindent The fitness of each solution is determined by the goal function described earlier. After several generations, the best solutions evolve toward feasible and optimal paths, balancing exploration and exploitation through crossover and mutation.
+
+
+
 
 \subsection{Results Analysis}
 
