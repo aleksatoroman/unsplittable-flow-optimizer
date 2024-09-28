@@ -7,9 +7,10 @@
 \geometry{margin=1in}
 \usepackage{float}
 \usepackage{float}
+\usepackage{url}
 
 \title{Solving the Single-Source Unsplittable Flow Problem with Metaheuristic Approaches}
-\author{\\Aleksa Toroman 84/2018 \\\\ Univerzitet u Beogradu, Matematički fakultet}
+\author{\\Aleksa Toroman 84/2018 \\\\ University in Belgrade, Faculty of Mathematics}
 \date{\today}
 
 \begin{document}
@@ -26,9 +27,9 @@
 
 The Single-Source Unsplittable Flow Problem (SSUFP) is a well-known problem in network flow optimization. Given a graph $G = (V, E)$ with a source vertex $s$ and a collection of sinks $t_1, \ldots, t_k$ associated with integer demands $\rho_1, \ldots, \rho_k$, the goal is to route a single flow path from the source $s$ to each sink $t_i$ such that the total flow across any edge $e \in E$ does not exceed the edge’s capacity $c(e)$. Formally, the objective is to minimize the maximum ratio $\frac{f(e)}{c(e)}$ over all edges, where $f(e)$ is the total flow routed across edge $e$.
 
-\noindent \textbf{Problem Statement:}
-
 \
+
+\noindent \textbf{Problem Statement:}
 
 \begin{itemize}
     \item \textbf{Instance:} A directed graph $G=(V, E)$ with edge capacities $c: E \to \mathbb{Z}^+$, a source node $s$, and $k$ sinks $t_1, \ldots, t_k$, each with a demand $\rho_i$. Each demand $\rho_i$ must be routed along a single path from $s$ to $t_i$. Additionally, each vertex can have any number of sinks.
@@ -79,11 +80,9 @@ The research for solving the Single-Source Unsplittable Flow Problem (SSUFP) was
     \item Analyzing and evaluating the results of the implementations.
 \end{enumerate}
 
-\noindent Each of these steps will be elaborated in the subsequent sections.
-
 \subsection{Getting Familiar with the Problem and Literature Review}
 
-The initial phase of the project focused on understanding the Single-Source Unsplittable Flow Problem (SSUFP). This involved studying its mathematical formulation, related optimization challenges, and reviewing literature on approximation algorithms. Research on unsplittable flow and NP-hard network problems offered insights into solution techniques and complexities.
+The first phase of the project was dedicated to understanding the Single-Source Unsplittable Flow Problem (SSUFP). I began by exploring its mathematical formulation and related optimization challenges. To build a solid foundation, I reviewed relevant literature and research on unsplittable flow and NP-hard network problems, which helped me grasp the complexities and common solution approaches.
 
 \section{Graph Representation and Infrastructure}
 
@@ -146,7 +145,7 @@ Maximum Flow-to-Capacity Ratio: 0.67
 
 \subsection{Graph Generation Library for Instance Creation}
 
-In order to effectively test the algorithms, a graph generation library was developed due to the lack of a pre-existing dataset for the Single-Source Unsplittable Flow Problem (SSUFP). Initially, I created a few simple examples that could be manually calculated, serving as a basic test for the algorithms. However, for larger-scale testing and analysis, I implemented a mechanism to generate random graph instances of various sizes.
+In order to effectively test the algorithms, a graph generation library was developed due to the lack of a pre-existing dataset for the Single-Source Unsplittable Flow Problem (SSUFP). Initially, I created a few simple examples that could be manually calculated, serving as a basic test for the algorithms. However, for larger-scale testing and analysis, i implemented a mechanism to generate random graph instances of various sizes. One challenge was ensuring the generated graphs consistently provided valid paths between the source and sink vertices, which required several iterations to refine the generator.
 
 \
 
@@ -256,10 +255,6 @@ To solve the Single-Source Unsplittable Flow Problem (SSUFP), several algorithms
 
 \noindent Each of these algorithms were implemented in Python, leveraging the core infrastructure classes and utility functions described earlier.
 
-\
-
-\noindent  In the following sections, we will present the results obtained from each algorithm, how is it implemented, along with a comparison of their effectiveness and quality of solutions.
-
 \subsection{Brute Force Algorithm}
 
 The Brute Force method retrieves all possible paths from the source to each sink, including multiple demands for the same sink. Using the NetworkX library to find simple paths, this works well for small graphs.
@@ -298,15 +293,8 @@ Number of paths for each demand: [19, 19, 38, 38, 11]
 All heuristic algorithms in this project are controlled by two main criteria: maximum execution time and the no\_improvement\_threshold. These criteria ensure that algorithms stop either after a set time or when no further improvements are made.
 
 \begin{itemize}
-    \item \textbf{Maximum Time}: Each algorithm runs for a set time limit, ranging from 20 seconds for small graphs to 2 minutes for larger ones, to balance runtime and exploration.
-    \item \textbf{No\_Improvement\_Threshold}: This defines how many iterations can occur without improvement. For Simulated Annealing, this threshold is higher (100-150 iterations), while for Genetic Algorithms, it’s lower (50-100 iterations).
-\end{itemize}
-
-The parameters adjust with graph size:
-\begin{itemize}
-    \item \textbf{Small Graphs}: Lower limits (20-40 seconds and 50 iterations).
-    \item \textbf{Medium Graphs}: Moderate limits (40-90 seconds and around 100 iterations).
-    \item \textbf{Large Graphs}: Higher limits (up to 2 minutes and 150 iterations).
+    \item \textbf{Maximum Time}: Each algorithm runs for a set time limit, ranging from 20 seconds for small graphs to 80 seconds for larger ones, to balance runtime and exploration.
+    \item \textbf{No\_Improvement\_Threshold}: This defines how many iterations can occur without improvement. For Simulated Annealing, this threshold is higher (150-250 iterations), while for Genetic Algorithms, it’s lower (100-150 iterations).
 \end{itemize}
 
 \noindent These limits can be adjusted for more exploration if computational resources allow but are kept within reasonable bounds to ensure efficient testing and meaningful results.
@@ -329,7 +317,7 @@ To optimize this process:
     \item The current path is excluded from consideration to ensure a true modification.
 \end{itemize}
 
-This method is used in Simulated Annealing for exploring new solutions, in VNS to switch between neighborhoods, and in Genetic Algorithms during mutation to introduce variety.
+\noindent This method is used in Simulated Annealing for exploring new solutions, in VNS in both shaking and local search step, and in Genetic Algorithms during mutation to introduce variety.
 
 \subsection{Goal Function}
 
@@ -390,7 +378,7 @@ The Simulated Annealing algorithm was implemented to explore the solution space 
 
 \begin{verbatim}
 sa_param_grid = {
-    'initial_temp': [1000, 5000],
+    'initial_temp': [3000, 5000],
     'cooling_rate': [0.99, 0.95]
 }
 \end{verbatim}
@@ -456,11 +444,11 @@ The Genetic Algorithm (GA) was implemented to solve the Single-Source Unsplittab
 
 \begin{verbatim}
 ga_param_grid = {
-    'population_size': [100, 200],
-    'num_generations': [200, 500],
-    'tournament_size': [5, 7],
+    'population_size': [100, 200, 400],
+    'num_generations': [300, 500],
+    'tournament_size': [5, 10],
     'elitism_size': [10, 20],
-    'mutation_prob': [0.1, 0.2]
+    'mutation_prob': [0.05, 0.1, 0.15, 0.2]
 }
 \end{verbatim}
 
@@ -471,9 +459,9 @@ ga_param_grid = {
     
     \item \textbf{Selection:} Tournament-based selection is used to choose parents for crossover. In each tournament, a subset of individuals is selected at random, and the one with the best fitness is chosen as a parent.
     
-    \item \textbf{Crossover:} Uniform crossover is applied to combine two parents and create two children. For each demand, there is a 50\% chance of taking the demand path from one parent or the other. The unselected demand path goes to the other child, ensuring both children are formed by mixing parts of their parents' paths.
+    \item \textbf{Crossover:} Uniform crossover is applied to combine two parents and create two children. For each demand, there is a 50\% chance of taking the demand path from one parent or the other. The unselected demand path goes to the other child, ensuring both children are formed by mixing parts of their parents' paths. This process repeats for all demands.
 
-    \item \textbf{Mutation:} Each demand path in the child solution is mutated with a given probability (mutation\_prob). The mutation is performed using the previously described \textit{generate\_neighbor} method, which modifies part of the path while maintaining feasibility.
+    \item \textbf{Mutation:} Each demand path in the child solution is mutated with a given probability (mutation\_prob). The mutation is performed using the previously described \textit{generate\_neighbor} method, which modifies part of the path.
 \end{itemize}
 
 \begin{verbatim}
@@ -486,9 +474,57 @@ function mutate(mutation_prob):
 \noindent The fitness of each solution is determined by the goal function described earlier. After several generations, the best solutions evolve toward feasible and optimal paths, balancing exploration and exploitation through crossover and mutation.
 
 
+\section{Results Comparison and Conclusion}\
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.32\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{small_results.png}
+        \caption{Best Algorithm Comparison Across Small Instances}
+        \label{fig:small_results}
+    \end{minipage}\hfill
+    \begin{minipage}{0.32\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{medium_results.png}
+        \caption{Best Algorithm Comparison Across Medium Instances}
+        \label{fig:medium_results}
+    \end{minipage}\hfill
+    \begin{minipage}{0.32\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{large_results.png}
+        \caption{Best Algorithm Comparison Across Large Instances}
+        \label{fig:large_results}
+    \end{minipage}
+\end{figure}
+
+\subsection{Small Instances}
+All three algorithms (Genetic Algorithm, Simulated Annealing, and VNS) perform similarly for small instances, each achieving a best score of 0.83. This suggests that for smaller problem instances, any of the heuristic methods can yield optimal or near-optimal solutions with high reliability.
+
+\subsection{Medium Instances}
+The performance remains close among the algorithms for medium instances, with the Genetic Algorithm and VNS slightly outperforming Simulated Annealing. The best scores are around 0.58, indicating that even for medium-sized instances, the algorithms provide comparable results, with a slight advantage for the Genetic Algorithm and VNS.
+
+\subsection{Large Instances}
+For large instances, a clearer differentiation is observed. The Genetic Algorithm achieves the highest score at 0.55, followed by VNS at 0.50, while Simulated Annealing lags behind with a score of 0.25. This suggests that for larger, more complex graphs, the Genetic Algorithm and VNS are more effective compared to Simulated Annealing.
+
+\section{Future Improvements}
+
+In the future, I plan to focus more on large-scale graph instances, as small and medium graphs tend to yield similar performances across the algorithms. Expanding the dataset with larger, more complex graphs would provide better insights into the scalability of the solutions. Additionally, I aim to explore other heuristic algorithms, such as Ant Colony Optimization, to compare their effectiveness. For the existing Genetic Algorithm, experimenting with different strategies for crossover and mutation could further improve performance. Finally, optimization techniques and parallelism could be implemented to enhance the runtime efficiency of the program, allowing it to handle larger graphs more quickly.
 
 
-\subsection{Results Analysis}
+\clearpage
+
+\section*{References}
+
+\begin{itemize}
+    \item Yefim Dinitz, Naveen Garg, and Michel X. Goemans, \textit{On the Single-Source Unsplittable Flow Problem}, SIAM Journal on Computing, Vol. 31, No. 1, pp. 219-235, 2001.
+    \item GitHub Repository for Course Materials: \textit{MATF-RI/Materijali-sa-vezbi} \newline
+    \url{https://github.com/MATF-RI/Materijali-sa-vezbi}
+    \item Problem Definition, \textit{Introduction to the Unsplittable Flow} \newline
+    \url{https://www.csc.kth.se/~viggo/wwwcompendium/node125.html}.
+\end{itemize}
+
+
 
 % Placeholder for results analysis
 \end{document}
