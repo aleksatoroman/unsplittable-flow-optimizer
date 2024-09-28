@@ -21,7 +21,7 @@ class SimulatedAnnealing(BaseFlowAlgorithm):
 
         iterations_since_last_improvement = 0
 
-        while perf_counter() - start_time < self.max_time or iterations_since_last_improvement < self.no_improvement_threshold:
+        while perf_counter() - start_time < self.max_time and iterations_since_last_improvement < self.no_improvement_threshold:
             new_solution = GraphUtils.generate_neighbor(current_solution, graph)
 
             new_fitness = new_solution.calculate_score()
@@ -42,10 +42,10 @@ class SimulatedAnnealing(BaseFlowAlgorithm):
             if current_temp < 1e-3:
                 break
 
-        if iterations_since_last_improvement >= self.no_improvement_threshold:
-            best_solution.stopping_reason = 'No improvement threshold reached'
-        else:
+        if perf_counter() - start_time >= self.max_time:
             best_solution.stopping_reason = 'Max time reached'
+        else:
+            best_solution.stopping_reason = 'No improvement threshold reached'
 
         return best_solution
 

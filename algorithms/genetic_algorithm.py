@@ -58,7 +58,7 @@ class GeneticAlgorithm(BaseFlowAlgorithm):
         iterations_since_last_improvement = 0
         best_fitness = max(ind.fitness for ind in population)
 
-        while perf_counter() - start_time < self.max_time or iterations_since_last_improvement < self.no_improvement_threshold:
+        while perf_counter() - start_time < self.max_time and iterations_since_last_improvement < self.no_improvement_threshold:
             population.sort(key=lambda x: x.fitness, reverse=True)
 
             new_population[:self.elitism_size] = population[:self.elitism_size]
@@ -87,10 +87,9 @@ class GeneticAlgorithm(BaseFlowAlgorithm):
 
         max_individual = max(population, key=lambda x: x.fitness)
 
-        if iterations_since_last_improvement >= self.no_improvement_threshold:
-            max_individual.stopping_reason = 'No improvement threshold reached'
-        else:
+        if perf_counter() - start_time >= self.max_time:
             max_individual.stopping_reason = 'Max time reached'
-
+        else:
+            max_individual.stopping_reason = 'No improvement threshold reached'
 
         return max_individual.code

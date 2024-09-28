@@ -24,7 +24,8 @@ class VNSAlgorithm(BaseFlowAlgorithm):
 
         iterations_since_last_improvement = 0
 
-        while perf_counter() - start_time < self.max_time or iterations_since_last_improvement < self.no_improvement_threshold:
+        while perf_counter() - start_time < self.max_time and iterations_since_last_improvement < self.no_improvement_threshold:
+            new_score = float('-inf')
             for k in range(self.k_min, self.k_max):
                 new_solution = self.shaking(solution, graph, k)
                 new_score = new_solution.calculate_score()
@@ -34,14 +35,16 @@ class VNSAlgorithm(BaseFlowAlgorithm):
                 if new_score > current_score or (new_score == current_score and random.random() < self.move_prob):
                     current_score = new_score
                     solution = deepcopy(new_solution)
-                    iterations_since_last_improvement = 0
-                else:
-                    iterations_since_last_improvement += 1
 
-        if iterations_since_last_improvement >= self.no_improvement_threshold:
-            solution.stopping_reason = 'No improvement threshold reached'
-        else:
+            if new_score <= current_score:
+                iterations_since_last_improvement += 1
+            else:
+                iterations_since_last_improvement = 0
+
+        if perf_counter() - start_time >= self.max_time:
             solution.stopping_reason = 'Max time reached'
+        else:
+            solution.stopping_reason = 'No improvement threshold reached'
 
         return solution
 

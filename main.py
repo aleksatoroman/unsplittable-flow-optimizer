@@ -119,13 +119,13 @@ def get_stopping_criteria(algorithm: str, graph: FlowGraph) -> dict:
 
     elif algorithm == 'GeneticAlgorithm':
         if graph_size == 'small':
-            max_time = 15
+            max_time = 20
             no_improvement_threshold = 30
         elif graph_size == 'medium':
-            max_time = 30
+            max_time = 40
             no_improvement_threshold = 75
         else:
-            max_time = 45
+            max_time = 60
             no_improvement_threshold = 100
 
     elif algorithm == 'VNSAlgorithm':
@@ -133,10 +133,10 @@ def get_stopping_criteria(algorithm: str, graph: FlowGraph) -> dict:
             max_time = 20
             no_improvement_threshold = 40
         elif graph_size == 'medium':
-            max_time = 35
+            max_time = 40
             no_improvement_threshold = 80
         else:
-            max_time = 50
+            max_time = 60
             no_improvement_threshold = 100
 
     else:
@@ -212,7 +212,7 @@ def main() -> None:
         if args.examples:
             root_path = args.examples
         else:
-            root_path = "./resources/examples/"
+            root_path = "./resources/generated/"
         run_algorithms_in_folder(root_path, algorithms)
 
     elif args.action == "analyze":
