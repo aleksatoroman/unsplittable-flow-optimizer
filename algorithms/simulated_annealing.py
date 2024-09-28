@@ -42,6 +42,11 @@ class SimulatedAnnealing(BaseFlowAlgorithm):
             if current_temp < 1e-3:
                 break
 
+        if iterations_since_last_improvement >= self.no_improvement_threshold:
+            best_solution.stopping_reason = 'No improvement threshold reached'
+        else:
+            best_solution.stopping_reason = 'Max time reached'
+
         return best_solution
 
     @staticmethod

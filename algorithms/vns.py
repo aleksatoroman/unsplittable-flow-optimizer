@@ -38,6 +38,11 @@ class VNSAlgorithm(BaseFlowAlgorithm):
                 else:
                     iterations_since_last_improvement += 1
 
+        if iterations_since_last_improvement >= self.no_improvement_threshold:
+            solution.stopping_reason = 'No improvement threshold reached'
+        else:
+            solution.stopping_reason = 'Max time reached'
+
         return solution
 
     def shaking(self, solution: FlowResult, graph: FlowGraph, k: int) -> FlowResult:

@@ -86,4 +86,11 @@ class GeneticAlgorithm(BaseFlowAlgorithm):
                 iterations_since_last_improvement += 1
 
         max_individual = max(population, key=lambda x: x.fitness)
+
+        if iterations_since_last_improvement >= self.no_improvement_threshold:
+            max_individual.stopping_reason = 'No improvement threshold reached'
+        else:
+            max_individual.stopping_reason = 'Max time reached'
+
+
         return max_individual.code

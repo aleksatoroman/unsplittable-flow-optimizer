@@ -17,6 +17,7 @@ class FlowResult:
     def __init__(self, flow_paths: List[FlowPath], edges: Dict[Tuple[int, int], int]):
         self.flow_paths = flow_paths
         self.edges = edges
+        self.stopping_reason = 'Unknown'
 
     def calculate_edge_flows(self) -> Dict[Tuple[int, int], int]:
         edge_flows = {edge: 0 for edge in self.edges}
