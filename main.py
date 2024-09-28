@@ -8,6 +8,7 @@ from algorithms.brute_force import BruteForce
 from algorithms.genetic_algorithm import GeneticAlgorithm
 from algorithms.simulated_annealing import SimulatedAnnealing
 from algorithms.vns import VNSAlgorithm
+from models.graph import FlowGraph
 from models.log_level import LogLevel
 from models.runner import Runner
 from utils.graph_parser import parse_graph_with_demands
@@ -16,6 +17,7 @@ from itertools import product
 from glob import glob
 
 from utils.graph_visualizer import visualize_flow_graph
+from utils.statistics import Statistics
 
 
 def get_algorithms(algorithm_names: List[str]):
@@ -36,8 +38,7 @@ def run_algorithms_in_folder(root_folder: str, algorithm_names: List[str]) -> No
 
     sa_param_grid = {
         'initial_temp': [1000, 5000],
-        'cooling_rate': [0.99, 0.95],
-        'num_iterations': [1000, 2000]
+        'cooling_rate': [0.99, 0.95]
     }
 
     ga_param_grid = {
@@ -49,9 +50,8 @@ def run_algorithms_in_folder(root_folder: str, algorithm_names: List[str]) -> No
     }
 
     vns_param_grid = {
-        'k_min': [1, 2],
+        'k_min': [0, 1, 2],
         'k_max': [3, 5],
-        'time_limit': [300, 600],
         'move_prob': [0.1, 0.2],
         'reroute_entire_path_prob': [0.3, 0.5]
     }
@@ -84,11 +84,68 @@ def run_algorithms_in_folder(root_folder: str, algorithm_names: List[str]) -> No
         os.makedirs(report_dir, exist_ok=True)
 
         for algorithm_class, param_combinations in algorithms:
+            stopping_criteria = get_stopping_criteria(algorithm_class.__name__, graph)
+
             for params in param_combinations:
+                params.update(stopping_criteria)
+
                 print(f"Running {algorithm_class.__name__} on {example_name} with params: {params}")
                 runner = Runner(algorithm_class, graph, params, report_dir)
-                runner.run(LogLevel.INFO)
+                runner.run(LogLevel.OFF)
                 print('*' * 50)
+
+
+def get_stopping_criteria(algorithm: str, graph: FlowGraph) -> dict:
+    num_nodes = len(graph.get_graph().nodes)
+    num_edges = len(graph.get_graph().edges)
+
+    if num_nodes <= 10 and num_edges <= 20:
+        graph_size = 'small'
+    elif num_nodes <= 25 and num_edges <= 50:
+        graph_size = 'medium'
+    else:
+        graph_size = 'large'
+
+    if algorithm == 'SimulatedAnnealing':
+        if graph_size == 'small':
+            max_time = 20
+            no_improvement_threshold = 50
+        elif graph_size == 'medium':
+            max_time = 40
+            no_improvement_threshold = 100
+        else:
+            max_time = 60
+            no_improvement_threshold = 150
+
+    elif algorithm == 'GeneticAlgorithm':
+        if graph_size == 'small':
+            max_time = 15
+            no_improvement_threshold = 30
+        elif graph_size == 'medium':
+            max_time = 30
+            no_improvement_threshold = 75
+        else:
+            max_time = 45
+            no_improvement_threshold = 100
+
+    elif algorithm == 'VNSAlgorithm':
+        if graph_size == 'small':
+            max_time = 20
+            no_improvement_threshold = 40
+        elif graph_size == 'medium':
+            max_time = 35
+            no_improvement_threshold = 80
+        else:
+            max_time = 50
+            no_improvement_threshold = 100
+
+    else:
+        raise ValueError(f"Algorithm {algorithm} is not recognized")
+
+    return {
+        'max_time': max_time,
+        'no_improvement_threshold': no_improvement_threshold
+    }
 
 
 def generate_graphs(output_dir: str) -> None:
@@ -105,9 +162,10 @@ def generate_graphs(output_dir: str) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Flow Graph Generator and Algorithm Runner")
 
-    parser.add_argument("--action", type=str, choices=["generate", "run", "run-single"], required=True, help="Action to perform (generate or run)")
+    parser.add_argument("--action", type=str, choices=["generate", "run", "run-single", "analyze"], required=True, help="Action to perform (generate or run, run-single, analyze)")
     parser.add_argument("--algorithms", type=str, required=False, help="Algorithms to as run as comma separated list (brute-force, genetic, simulated-annealing, vns)")
     parser.add_argument("--examples", type=str, required=False, help="Root folder of examples to run algorithms on")
+    parser.add_argument("--reports", type=str, required=False, help="Folder path to CSV report files for analysis")
 
     args = parser.parse_args()
 
@@ -156,6 +214,16 @@ def main() -> None:
         else:
             root_path = "./resources/examples/"
         run_algorithms_in_folder(root_path, algorithms)
+
+    elif args.action == "analyze":
+        if not args.reports:
+            print("You must provide a path to the reports folder using --reports, using default path")
+            reports = "./resources/examples/reports/2024-09-28_01_01_36/"
+        else:
+            reports = args.reports
+
+        stats = Statistics(reports)
+        stats.run_best_of_best_analysis()
 
 
 if __name__ == "__main__":

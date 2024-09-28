@@ -11,11 +11,10 @@ from utils.utils import GraphUtils
 class VNSAlgorithm(BaseFlowAlgorithm):
     def __init__(self, params: dict):
         super().__init__(params)
-        self.time_limit = params.get('time_limit', 300)
         self.k_min = params.get('k_min', 1)
         self.k_max = params.get('k_max', 5)
         self.move_prob = params.get('move_prob', 0.1)
-        self.num_iterations = params.get('num_iterations', 1000)
+        self.reroute_entire_path_prob = params.get('reroute_entire_path_prob', 0.5)
 
     def solve(self, graph: FlowGraph) -> FlowResult | None:
         start_time = perf_counter()
@@ -23,7 +22,9 @@ class VNSAlgorithm(BaseFlowAlgorithm):
         solution = GraphUtils.generate_initial_solution(graph)
         current_score = solution.calculate_score()
 
-        for _ in range(self.num_iterations):
+        iterations_since_last_improvement = 0
+
+        while perf_counter() - start_time < self.max_time or iterations_since_last_improvement < self.no_improvement_threshold:
             for k in range(self.k_min, self.k_max):
                 new_solution = self.shaking(solution, graph, k)
                 new_score = new_solution.calculate_score()
@@ -33,12 +34,15 @@ class VNSAlgorithm(BaseFlowAlgorithm):
                 if new_score > current_score or (new_score == current_score and random.random() < self.move_prob):
                     current_score = new_score
                     solution = deepcopy(new_solution)
+                    iterations_since_last_improvement = 0
+                else:
+                    iterations_since_last_improvement += 1
 
         return solution
 
     def shaking(self, solution: FlowResult, graph: FlowGraph, k: int) -> FlowResult:
         num_demands_to_modify = min(k, len(solution.flow_paths))
-        return self.multi_path_modification(solution, graph, num_demands_to_modify)
+        return self.multi_path_modification(solution, graph, num_demands_to_modify, self.reroute_entire_path_prob)
 
     @staticmethod
     def local_search(solution: FlowResult, score: float, graph: FlowGraph) -> (FlowResult, float):

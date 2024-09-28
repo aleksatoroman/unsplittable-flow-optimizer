@@ -11,13 +11,15 @@ def write_report_to_csv(file_path, algorithm_name, params, elapsed_time, flow_re
         writer = csv.writer(file)
 
         if write_header:
-            header = ['Algorithm', 'Parameters', 'Elapsed Time (s)', 'Feasible', 'Max Flow-to-Capacity Ratio', 'Overflow']
+            header = ['Algorithm', 'Parameters', 'Elapsed Time (s)', 'Feasible', 'Max Flow-to-Capacity Ratio', 'Overflow', 'Score', 'Max Time In Seconds', 'No Improvement Threshold']
             writer.writerow(header)
 
         feasible = flow_result.is_feasible()
         max_ratio = flow_result.calculate_max_flow_to_capacity_ratio()
         overflow = flow_result.calculate_overflow()
         score = flow_result.calculate_score()
+        max_time = params.get('max_time', None)
+        no_improvement_threshold = params.get('no_improvement_threshold', None)
 
         row = [
             algorithm_name,
@@ -26,7 +28,10 @@ def write_report_to_csv(file_path, algorithm_name, params, elapsed_time, flow_re
             feasible,
             f"{max_ratio:.4f}",
             f"{overflow:.4f}",
-            f"{score:.4f}"
+            f"{score:.4f}",
+            max_time,
+            no_improvement_threshold
         ]
 
         writer.writerow(row)
+

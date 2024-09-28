@@ -2,6 +2,7 @@ from algorithms.base_algorithm import BaseFlowAlgorithm
 from models.graph import FlowGraph
 from models.flow_result import FlowResult, FlowPath
 import random
+from time import perf_counter
 from models.individual import Individual
 
 
@@ -10,7 +11,6 @@ class GeneticAlgorithm(BaseFlowAlgorithm):
     def __init__(self, params: dict):
         super().__init__(params)
         self.population_size = params.get('population_size', 100)
-        self.num_generations = params.get('num_generations', 500)
         self.tournament_size = params.get('tournament_size', 5)
         self.elitism_size = params.get('elitism_size', 5)
         self.mutation_prob = params.get('mutation_prob', 0.01)
@@ -51,10 +51,14 @@ class GeneticAlgorithm(BaseFlowAlgorithm):
                 )
 
     def solve(self, graph) -> FlowResult | None:
+        start_time = perf_counter()
         population = [Individual(graph) for _ in range(self.population_size)]
         new_population = population.copy()
 
-        for i in range(self.num_generations):
+        iterations_since_last_improvement = 0
+        best_fitness = max(ind.fitness for ind in population)
+
+        while perf_counter() - start_time < self.max_time or iterations_since_last_improvement < self.no_improvement_threshold:
             population.sort(key=lambda x: x.fitness, reverse=True)
 
             new_population[:self.elitism_size] = population[:self.elitism_size]
@@ -74,6 +78,12 @@ class GeneticAlgorithm(BaseFlowAlgorithm):
                     new_population[j].fitness = new_population[j].calc_fitness()
                     new_population[j + 1].fitness = new_population[j + 1].calc_fitness()
 
+            current_best_fitness = max(ind.fitness for ind in population)
+            if current_best_fitness > best_fitness:
+                best_fitness = current_best_fitness
+                iterations_since_last_improvement = 0
+            else:
+                iterations_since_last_improvement += 1
+
         max_individual = max(population, key=lambda x: x.fitness)
         return max_individual.code
-

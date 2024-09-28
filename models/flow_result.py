@@ -95,6 +95,9 @@ class FlowResult:
         return total_overflow
 
     def info(self, level: LogLevel) -> None:
+        if level == LogLevel.OFF:
+            return
+
         for flow_path in self.flow_paths:
             print(f"Path for Flow (Source: {flow_path.source}, Sink: {flow_path.sink}, Flow: {flow_path.flow}): {flow_path.path}")
 
