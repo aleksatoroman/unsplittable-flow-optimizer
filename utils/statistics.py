@@ -37,12 +37,13 @@ class Statistics:
         plt.ylabel('Best Score (Higher is Better)')
         plt.title('Best Algorithm Comparison Across All Instances')
         plt.show()
+        
+        for index, row in best_params.iterrows():
+            print(f"Algorithm: {row['Algorithm']}")
+            print(f"Best Parameters: {row['Parameters']}")
+            print(f"Score: {row['Score']:.2f}")
+            print('*' * 50)
 
     def run_best_of_best_analysis(self):
         self.compare_best_models()
 
-
-# Example usage
-if __name__ == "__main__":
-    stats = Statistics('path_to_reports_folder')
-    stats.run_best_of_best_analysis()

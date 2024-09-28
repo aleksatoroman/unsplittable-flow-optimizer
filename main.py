@@ -1,4 +1,5 @@
 import argparse
+import itertools
 import os
 import time
 from typing import List
@@ -37,17 +38,40 @@ def run_algorithms_in_folder(root_folder: str, algorithm_names: List[str]) -> No
     txt_files = glob(os.path.join(root_folder, "*.txt"))
 
     sa_param_grid = {
-        'initial_temp': [1000, 5000],
+        'initial_temp': [3000, 5000],
         'cooling_rate': [0.99, 0.95]
     }
 
     ga_param_grid = {
-        'population_size': [100, 200],
-        'num_generations': [200, 500],
-        'tournament_size': [5, 7],
-        'elitism_size': [10, 20],
-        'mutation_prob': [0.1, 0.2]
+        'population_size': [100, 200, 400],
+        'num_generations': [300, 500],
+        'tournament_size': [5, 10],
+        'mutation_prob': [0.05, 0.1, 0.15, 0.2]
     }
+
+    ga_combinations = []
+
+    for pop_size in ga_param_grid['population_size']:
+        if pop_size == 100:
+            elitism_size = 5
+        elif pop_size == 200:
+            elitism_size = 10
+        else:
+            elitism_size = 20
+
+        for combo in itertools.product(
+                [pop_size],
+                ga_param_grid['num_generations'],
+                ga_param_grid['tournament_size'],
+                ga_param_grid['mutation_prob']
+        ):
+            ga_combinations.append({
+                'population_size': combo[0],
+                'num_generations': combo[1],
+                'tournament_size': combo[2],
+                'elitism_size': elitism_size,
+                'mutation_prob': combo[3]
+            })
 
     vns_param_grid = {
         'k_min': [0, 1, 2],
@@ -111,33 +135,33 @@ def get_stopping_criteria(algorithm: str, graph: FlowGraph) -> dict:
             max_time = 20
             no_improvement_threshold = 50
         elif graph_size == 'medium':
-            max_time = 40
-            no_improvement_threshold = 100
-        else:
             max_time = 60
             no_improvement_threshold = 150
+        else:
+            max_time = 80
+            no_improvement_threshold = 250
 
     elif algorithm == 'GeneticAlgorithm':
         if graph_size == 'small':
             max_time = 20
-            no_improvement_threshold = 30
+            no_improvement_threshold = 40
         elif graph_size == 'medium':
-            max_time = 40
-            no_improvement_threshold = 75
-        else:
             max_time = 60
             no_improvement_threshold = 100
+        else:
+            max_time = 80
+            no_improvement_threshold = 150
 
     elif algorithm == 'VNSAlgorithm':
         if graph_size == 'small':
             max_time = 20
-            no_improvement_threshold = 40
+            no_improvement_threshold = 50
         elif graph_size == 'medium':
-            max_time = 40
-            no_improvement_threshold = 80
-        else:
             max_time = 60
-            no_improvement_threshold = 100
+            no_improvement_threshold = 150
+        else:
+            max_time = 80
+            no_improvement_threshold = 250
 
     else:
         raise ValueError(f"Algorithm {algorithm} is not recognized")
@@ -218,7 +242,7 @@ def main() -> None:
     elif args.action == "analyze":
         if not args.reports:
             print("You must provide a path to the reports folder using --reports, using default path")
-            reports = "./resources/examples/reports/2024-09-28_01_01_36/"
+            reports = "./resources/generated/reports/2024-09-28_11_13_07"
         else:
             reports = args.reports
 

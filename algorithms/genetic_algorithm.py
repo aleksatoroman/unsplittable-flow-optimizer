@@ -88,8 +88,8 @@ class GeneticAlgorithm(BaseFlowAlgorithm):
         max_individual = max(population, key=lambda x: x.fitness)
 
         if perf_counter() - start_time >= self.max_time:
-            max_individual.stopping_reason = 'Max time reached'
+            max_individual.code.stopping_reason = 'Max time reached'
         else:
-            max_individual.stopping_reason = 'No improvement threshold reached'
+            max_individual.code.stopping_reason = 'No improvement threshold reached'
 
         return max_individual.code
