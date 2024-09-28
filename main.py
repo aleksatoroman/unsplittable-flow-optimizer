@@ -162,6 +162,12 @@ def get_stopping_criteria(algorithm: str, graph: FlowGraph) -> dict:
         else:
             max_time = 80
             no_improvement_threshold = 250
+    elif algorithm == 'BruteForce':
+        # This is not used for BruteForce
+        return {
+            'max_time': float('inf'),
+            'no_improvement_threshold': 0
+        }
 
     else:
         raise ValueError(f"Algorithm {algorithm} is not recognized")
@@ -190,6 +196,7 @@ def main() -> None:
     parser.add_argument("--algorithms", type=str, required=False, help="Algorithms to as run as comma separated list (brute-force, genetic, simulated-annealing, vns)")
     parser.add_argument("--examples", type=str, required=False, help="Root folder of examples to run algorithms on")
     parser.add_argument("--reports", type=str, required=False, help="Folder path to CSV report files for analysis")
+    parser.add_argument("--example", type=str, required=False, help="File path of example to run single algorithm on")
 
     args = parser.parse_args()
 
@@ -204,7 +211,12 @@ def main() -> None:
                 os.remove(os.path.join(generated_graphs_path, file))
         generate_graphs(output_dir=generated_graphs_path)
     elif args.action == "run-single":
-        file_path = "./resources/examples/2b.txt"
+        if not args.example:
+            print("You must provide an example file path using --example, using default path")
+            file_path = "./resources/examples/2b.txt"
+        else:
+            file_path = args.example
+
         graph = parse_graph_with_demands(file_path)
 
         visualize_flow_graph(graph, 'circular')
@@ -236,7 +248,7 @@ def main() -> None:
         if args.examples:
             root_path = args.examples
         else:
-            root_path = "./resources/generated/"
+            root_path = "./resources/examples/"
         run_algorithms_in_folder(root_path, algorithms)
 
     elif args.action == "analyze":

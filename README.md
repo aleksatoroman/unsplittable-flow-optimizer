@@ -5,10 +5,11 @@ This project implements algorithms to solve the Single-Source Unsplittable Flow 
 ## Usage
 
 ### Arguments
-- `--action`: Choose between "generate", "run", or "analyze".
+- `--action`: Choose between "generate", "run",  "run-single" or "analyze".
 - `--algorithms`: Comma-separated list of algorithms to run: `"brute-force", "genetic", "simulated-annealing", "vns"`.
 - `--examples`: Directory containing graph instances to run algorithms on.
 - `--reports`: Directory to store or analyze result reports.
+- `--example`: File path to problem instance to run algorithms in `run-single` mode
 
 ### Available Commands
 1. **Generate Graphs**:

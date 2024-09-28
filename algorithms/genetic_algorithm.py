@@ -13,7 +13,7 @@ class GeneticAlgorithm(BaseFlowAlgorithm):
         self.population_size = params.get('population_size', 100)
         self.tournament_size = params.get('tournament_size', 5)
         self.elitism_size = params.get('elitism_size', 5)
-        self.mutation_prob = params.get('mutation_prob', 0.01)
+        self.mutation_prob = params.get('mutation_prob', 0.05)
 
     @staticmethod
     def selection(population, tournament_size) -> Individual:
